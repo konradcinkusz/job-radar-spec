@@ -7,6 +7,7 @@
   "enabledPlugins": {
     "architecture-core@architecture-standards": true,
     "ticket-delivery@architecture-standards": true,
-    "quality-and-process@architecture-standards": true
+    "quality-and-process@architecture-standards": true,
+    "deployment-and-platform@architecture-standards": true
   }
 }

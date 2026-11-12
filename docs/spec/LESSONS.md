@@ -40,3 +40,19 @@ Delete this file in a project created from the template, or keep it as backgroun
 - It cannot check that a claim is true, only that a claim carries a link and a date.
 - Projects created from a template do not receive later changes to it. Rules that should stay current belong in
   `architecture-standards`; this template holds only what is filled in per project.
+
+## Lessons imported for JobRadar
+
+Source: the notes and `CLAUDE.md` of `konradcinkusz/llm-multi-agent-chess`, the estate's worked example of the Copilot SDK. Each row
+says what it taught and where this specification uses it.
+
+| Observation | Used as |
+|---|---|
+| Its architecture review states that the real Copilot path has never been run by an agent; the live smoke is the owner's | Everything taken from it is "not confirmed live" (`COPILOT-SDK.md`); D-20 and T-00.04 put a real session into Phase 0 |
+| A test on the EF InMemory provider did not prove a query PostgreSQL could not translate (an `OrderBy` over a constructed record answered 500) | Store tests use a real SQLite file, never InMemory (SPEC §6.4) |
+| "Multiplier unknown" was the wrong answer for cost once Copilot billed AI credits per token | Cost in AI credits with a budget (ADR-0006) |
+| One rated game collapsed every bootstrap resample, so an interval "excluded" a value on floating-point noise: never claim significance from a tiny sample | `calibrate` prints the count beside the agreement, and the M2 gate needs two weeks of labels, not a percentage alone (SPEC §6.7, §14) |
+| The secret scan reads only commits reachable from `HEAD` | `secret-scan` in SPEC §9 |
+| A session that hit its usage limit was restarted from `main` and redid work | The director prompt says to resume from what was pushed |
+| One shared SDK project, with no SDK type in a public signature, checked by reflection | `JobRadar.Agents` and `PublicSurfaceTests` |
+
