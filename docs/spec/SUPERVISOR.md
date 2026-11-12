@@ -1,9 +1,24 @@
-# Supervisor protocol
+# Supervisor protocol (the director's protocol)
 
 > How one supervisor session turns [`TASKS.md`](TASKS.md) into merged code by delegating single tasks to implementer
 > sub-sessions. The supervisor owns decisions, contracts, briefs, reviews and merges. An implementer owns one task.
 > Models, the way sub-sessions are started, the parallel limit and the autonomy level come from
 > [`DECISIONS.md`](DECISIONS.md) D-14–D-18. This file does not repeat them.
+>
+> In JobRadar the supervisor is called the **director**. The two words mean the same role. Implementers are Claude Haiku 5.5
+> sub-sessions (D-14), so §10 applies on top of everything here.
+
+## 0. Two repositories
+
+| Repository | Holds | Who writes it |
+|---|---|---|
+| `job-radar-spec` | this specification, `PROGRESS.md`, ADRs, spike amendments | the director only, by pull request |
+| `job-radar` | the code, `config/`, workflows, `docs/spikes`, `docs/operations` | implementers (task files), the director (shared files) |
+
+The specification repository is the source of truth. An implementer may not have it attached, so **a brief is self-contained**:
+it quotes the task block and the SPEC sections the task names, verbatim, and it carries the relevant parts of `COPILOT-SDK.md`
+and `SOURCES.md` when the task touches them. The director never writes "see the spec" and nothing else. `PROGRESS.md` is
+updated in `job-radar-spec`; its evidence links point at pull requests and runs in `job-radar`.
 
 ## 1. Roles
 
@@ -52,15 +67,18 @@ Phase 0 of `TASKS.md` is never parallel and never skipped.
 Everything the implementer needs is in the brief or in files the brief names. It has no memory of other tasks.
 
 ```text
-You are implementing task <ID> of <owner>/<repo>.
+You are implementing task <ID> of konradcinkusz/job-radar.
 
 Load first, in this order:
   1. The architecture-standards skill implementation-phase, then <skills from the task's Read line>.
-  2. docs/spec/SPEC.md sections <from the task's Read line>.
-  3. AGENTS.md.
+  2. The specification text below (quoted from job-radar-spec, which you may not have attached).
+  3. AGENTS.md of job-radar.
 
 The task (verbatim from docs/spec/TASKS.md):
 <the whole task block>
+
+The specification it relies on (verbatim):
+<the SPEC sections, COPILOT-SDK.md and SOURCES.md parts the task's Read line names>
 
 Rules:
 - Work on branch task/<id>-<slug>. Touch only the files under Files. If another file must change, stop and write the
@@ -114,3 +132,25 @@ Rules:
 Before the next phase starts the supervisor compares what the documents claim with what can be measured now
 (the `session-status` skill), corrects `PROGRESS.md` and the README in one pull request, and lists the gaps as new tasks.
 No new feature work starts while a gate that was due is neither claimed with proof nor reported as failed with evidence.
+
+## 10. Working with Haiku 5.5 implementers
+
+A smaller model follows a precise instruction well and a vague one badly. The tasks are written for that, and the director
+keeps to these rules.
+
+1. **Nothing is left to design.** If a task block does not give a signature, a file name or a test name where one is needed, the
+   director adds it to the brief before sending. A "Blocked: question for director" answer is expected and cheap; a guess is not.
+2. **One project per task, at most about 250 changed lines.** A task that grows past this stops and is split.
+3. **The director reads the diff.** The implementer's summary is not evidence. For every task the director checks the list of
+   changed files against `Files:`, runs the named tests by name, and opens at least one test body to see it can fail. A test that
+   asserts nothing is returned as a finding.
+4. **Spikes, contracts, workflows, security-relevant code and anything that reads a live service are the director's own tasks**
+   (`Executor: supervisor` in `TASKS.md`). Haiku never decides what the Copilot SDK does; it implements what the spike recorded.
+5. **One revision round.** After one round of findings, a task that is still wrong is either redone by the director or split
+   smaller. It is not sent back a third time.
+6. **Prompts are written by the director.** The agent prompts of the product (`Prompts/*.md`) are drafted by the director or
+   by a task whose brief contains the full required content; an implementer does not invent behaviour for the product's agents.
+7. **Never more than D-16 at once**, and never two tasks whose `Files:` overlap, even when the wave table seems to allow it.
+8. **Model selection.** Sub-sessions are created with `model: claude-haiku-5-5` (D-14). If a task fails twice on the small model
+   for a reason that is capability and not clarity, the director does it itself and records that in `PROGRESS.md` notes.
+
