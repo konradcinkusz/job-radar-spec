@@ -1,0 +1,19 @@
+name: spec-check
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  spec:
+    # Cloud by default; set the repository variable RUNNER_LABELS (a JSON array) to use self-hosted runners.
+    runs-on: ${{ fromJSON(vars.RUNNER_LABELS || '["ubuntu-latest"]') }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: specification is consistent
+        run: scripts/check-spec.sh
+      - name: open markers are listed
+        if: always()
+        run: scripts/check-open-markers.sh
