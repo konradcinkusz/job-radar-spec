@@ -81,9 +81,17 @@ Fixed, never parallel (SUPERVISOR §3).
 - Executor: supervisor · Milestone: M0 · Depends: T-00.03
 - Read: SPEC §7, §12.1 A-01–A-04, A-06; DECISIONS D-20; `COPILOT-SDK.md` §3–§4; `ai-evals` §4 (trace assertions)
 - Files: `.github/workflows/probe.yml`, `.github/workflows/probe-copilot.yml`, `src/JobRadar.Sources/Probe/**`, `src/JobRadar.Agents/Spike/**`, `tests/fixtures/greenhouse/**`, `docs/spikes/**`, `docs/spec` amendments (specification repository)
-- Do: 1) `probe.yml` (`workflow_dispatch`): from a hosted runner call one real Greenhouse board (a slug the owner names), save the response trimmed to 5 postings as a fixture and as an artifact, record status code and content type. Repeat for one Ashby board, Remotive, Lever, We Work Remotely, No Fluff Jobs and justjoin.it: one request each, no loops. 2) `probe-copilot.yml` (`workflow_dispatch`, environment `copilot`): run a spike program that starts `CopilotClient` in `CopilotClientMode.Empty`, lists models, creates one session with one custom tool and a rejecting permission handler, asks it to call the tool with a fixed argument, prints the events, the usage and the credits, then asks it to run a shell command and prints what happened. 3) Write `docs/spikes/first-real-result.md` with both results, the exact SDK version, and the answers to the eight open questions of `COPILOT-SDK.md` §4. 4) Amend SOURCES.md and COPILOT-SDK.md (in the specification repository) with every difference found; update SPEC §12.1 rows A-01–A-04, A-06.
-- Accept: a real Greenhouse response is saved as a fixture; a real Copilot session returned a schema-valid tool call; credits read from the usage event are in the note, compared with the owner's billing page if the owner supplies it; each probed source has a verdict (works / differs / blocked); the tool-surface answer (question 5) is written down, whatever it is.
-- Verify: the two workflow run URLs; the note.
+- Do: 1) `probe.yml` (`workflow_dispatch`): from a hosted runner call one real Greenhouse board (a slug the owner names), save the response trimmed to 5 postings as a fixture and as an artifact, record status code and content type. Repeat for one Ashby board, Remotive, Lever, We Work Remotely, No Fluff Jobs and justjoin.it: one request each, no loops. 2) `probe-copilot.yml` is NOT run in CI (D-20, amended 2026-11-13): write the spike program (`src/JobRadar.Agents/Spike/**`, a console entry point `jobradar-spike` the owner runs locally with their own `COPILOT_GITHUB_TOKEN`); it should start `CopilotClient` in `CopilotClientMode.Empty`, list models, create one session with one custom tool and a rejecting permission handler, ask it to call the tool with a fixed argument, print the events, the usage and the credits, then ask it to run a shell command and print what happened; a `--fake` flag runs it on `FakeAgentRunner`-like scripted events so CI proves the program itself works. The program that starts `CopilotClient` in `CopilotClientMode.Empty`, lists models, creates one session with one custom tool and a rejecting permission handler, asks it to call the tool with a fixed argument, prints the events, the usage and the credits, then asks it to run a shell command and prints what happened. 3) Write `docs/spikes/first-real-result.md` with both results, the exact SDK version, and the answers to the eight open questions of `COPILOT-SDK.md` §4. 4) Amend SOURCES.md and COPILOT-SDK.md (in the specification repository) with every difference found; update SPEC §12.1 rows A-01–A-04, A-06.
+- Accept: a real Greenhouse response is saved as a fixture; the spike program builds and its `--fake` run is green in CI (a real Copilot result is T-00.05); credits read from the usage event are in the note, compared with the owner's billing page if the owner supplies it; each probed source has a verdict (works / differs / blocked); the tool-surface answer (question 5) is written down, whatever it is.
+- Verify: the probe run URL; the CI run of the spike's `--fake` mode.
+
+### T-00.05 Real Copilot session, run locally
+- Executor: owner · Milestone: M0 · Depends: T-00.04
+- Read: DECISIONS D-20; `COPILOT-SDK.md` §3–§4; the spike program from T-00.04
+- Files: `docs/spikes/first-real-result.md` (via the director)
+- Do: 1) On the owner's machine, with their Copilot-enabled account and a token in `COPILOT_GITHUB_TOKEN` (never committed, never pasted in chat), run the spike program as documented in its README. 2) Send the full console output to the director, with the credits shown on the owner's billing page for that run if visible. 3) The director writes `docs/spikes/first-real-result.md` and amends COPILOT-SDK.md and SPEC §12.1 A-02–A-04, A-06 from it.
+- Accept: the note holds the real output, the exact SDK version, and the answers to the eight questions of `COPILOT-SDK.md` §4, whatever they are.
+- Verify: the owner confirms the output is theirs and unedited.
 
 ---
 
@@ -298,7 +306,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline evals green and shown able to fail; at least 80% agreement over two weeks.
 
 ### T-02.01 Copilot SDK spike, in depth
-- Executor: supervisor · Milestone: M2 · Depends: T-01.25
+- Executor: supervisor · Milestone: M2 · Depends: T-01.25, T-00.05
 - Read: `COPILOT-SDK.md` all; SPEC §6.5, §11, A-02–A-06; `ai-evals` §4; `security-review`
 - Files: `src/JobRadar.Agents/Spike/**`, `.github/workflows/probe-copilot.yml`, `docs/spikes/copilot-sdk.md`
 - Do: 1) Extend the T-00.04 spike to the real use: a batch of 3 synthetic offers, the `save_offer_fields` tool as a typed record, `IsTerminal`, rejecting permissions; run it three times. 2) Answer the eight questions of `COPILOT-SDK.md` §4 with evidence from the events. 3) Live tool-surface check: put an instruction in an offer description asking the model to run a shell command, to read a file, and to call `save_score`; record what the runtime did. 4) Measure the credits of a 3-offer and a 15-offer batch; compare with the billing page if the owner supplies it. 5) List models; pick the cheapest suitable ones for the Extractor and Scorer. 6) Amend `COPILOT-SDK.md` and SPEC §6.5 where the spike disagrees; record the pin.
@@ -646,7 +654,7 @@ allows, whatever this table permits. Supervisor tasks run between waves.
 
 | Wave | Tasks | Blocked by |
 |---|---|---|
-| 0 | T-00.01 → T-00.02 → T-00.03 → T-00.04 (in order, never parallel) | — |
+| 0 | T-00.01 → T-00.02 → T-00.03 → T-00.04 (in order, never parallel); T-00.05 (owner, local) runs beside Phase 1 | — |
 | 1 | T-01.01 (director alone) | T-00.04 |
 | 2 | T-01.02, T-01.03, T-01.04, T-01.06, T-01.07, T-01.11, T-01.16, T-01.19 (disjoint folders) | T-01.01 |
 | 3 | T-01.05, T-01.08, T-01.12, T-01.13, T-01.14 | T-01.03 for T-01.05; T-01.07 and T-01.02 for T-01.08; T-01.11 for the adapters |
@@ -664,5 +672,5 @@ allows, whatever this table permits. Supervisor tasks run between waves.
 | 15 | T-04.01, then T-04.02 and T-04.03 (then director: T-04.04, T-04.05) | T-04.00 |
 | 16 | T-05.01 → T-05.02 → T-05.03 (then director: T-05.04–T-05.06) | T-04.05 |
 
-An owner task (T-00.01, T-00.02, T-01.15, T-03.00, T-03.10, T-04.00) is raised with the owner as soon as its dependency is
+An owner task (T-00.01, T-00.02, T-00.05, T-01.15, T-03.00, T-03.10, T-04.00) is raised with the owner as soon as its dependency is
 merged, never at the end of a wave.
