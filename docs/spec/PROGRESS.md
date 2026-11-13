@@ -24,9 +24,9 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.02 | merged | PR https://github.com/konradcinkusz/job-radar/pull/7 (squash `74f05f4`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510364495 (4 jobs green) | 2026-11-13 | implementer (Haiku 5.5): Core: ids and hashes. Director re-ran the known vector with `sha256sum` and checked the NFC/NFD test strings differ in code points |
 | T-01.03 | merged | PR https://github.com/konradcinkusz/job-radar/pull/8 (squash `0f95aee`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510397767 (4 jobs green) | 2026-11-13 | implementer (Haiku 5.5): Core: normaliser and canonical key. SPEC `Title` row clarified: no legal-form removal in titles (director decision). Main CI after merge not yet read |
 | T-01.04 | merged | PR https://github.com/konradcinkusz/job-radar/pull/6 (squash `a00eb52`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510239966 (4 jobs green); main https://github.com/konradcinkusz/job-radar/actions/runs/43510439806 | 2026-11-13 | implementer (Haiku 5.5): Core: lifecycle state machine. Director mutated one table row locally and saw 2 tests fail |
-| T-01.05 | not-started | | | implementer: Core: prefilter |
-| T-01.06 | not-started | | | implementer: Config: loaders and validation |
-| T-01.07 | not-started | | | implementer: Store: schema, first migration, FTS5 |
+| T-01.05 | in-flight | | | implementer: Core: prefilter Haiku 5.5 session session_01RjKhVNQvZ9yq8BiQhyESR7 started 2026-11-13 |
+| T-01.06 | not-started | | | implementer: Config: sources and criteria loaders, validation, lock (narrowed 2026-11-13; blocklist and report loaders are T-01.26) |
+| T-01.07 | in-flight | | | implementer: Store: schema, first migration, FTS5 Haiku 5.5 session session_01RjKhVNDP2U63xwee9hQvZH started 2026-11-13 |
 | T-01.08 | not-started | | | implementer: Store: upsert and change detection |
 | T-01.09 | not-started | | | implementer: Store: canonical groups and primary choice |
 | T-01.10 | not-started | | | implementer: Store: expiry, archive, runs |
@@ -35,7 +35,7 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.13 | not-started | | | implementer: Sources: Ashby adapter |
 | T-01.14 | not-started | | | implementer: Sources: Remotive adapter |
 | T-01.15 | not-started | | | owner: Company lists |
-| T-01.16 | not-started | | | implementer: Core: health evaluator |
+| T-01.16 | in-flight | | | implementer: Core: health evaluator Haiku 5.5 session session_01RjKhVQDt5y4kPzBz8mmfPR started 2026-11-13 |
 | T-01.17 | not-started | | | implementer: Cli: ingest |
 | T-01.18 | not-started | | | implementer: Cli: scrape |
 | T-01.19 | not-started | | | implementer: Core: report composer |
@@ -45,6 +45,7 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.23 | not-started | | | implementer: Cli: query and the duplicate audit; pipeline test |
 | T-01.24 | not-started | | | implementer: Store: size guard |
 | T-01.25 | not-started | | | supervisor: Stage 0 gate: seven days |
+| T-01.26 | not-started | | | implementer: Config: blocklist and report loaders (split from T-01.06) |
 | T-02.01 | not-started | | | supervisor: Copilot SDK spike, in depth |
 | T-02.02 | not-started | | | implementer: Agents: runner contract, fake runner, public-surface test |
 | T-02.03 | not-started | | | implementer: Agents: Copilot runner |
