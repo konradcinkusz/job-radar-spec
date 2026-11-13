@@ -242,7 +242,7 @@ JobRadar is one deployable (the CLI) and one database, so P3 is met trivially: `
 | `OfferId.Of(source, sourceId)` | lowercase hex of SHA-256 of `source + "\u001f" + sourceId`, first 32 characters |
 | `DescriptionHash.Of(text)` | SHA-256 of the description after trimming, collapsing whitespace runs to one space, and Unicode NFC; lowercase hex, full length |
 | `Normalizer.Company(s)` | NFKD, remove diacritics, lowercase; remove legal-form words (`sp. z o.o.`, `s.a.`, `spółka`, `gmbh`, `ag`, `ltd`, `llc`, `inc`, `s.l.`, `s.a.u.`, `b.v.`, `oy`, `ab`, `as`, `sas`, `srl`); replace punctuation with spaces; collapse spaces |
-| `Normalizer.Title(s)` | the same; additionally remove gender markers `(m/f/d)`, `(m/w/d)`, `(f/m/x)`, `m/k`, `(all genders)`, level words are **kept** |
+| `Normalizer.Title(s)` | the same steps except that **legal-form words are not removed** (they would damage real titles; decided by the director 2026-11-13, T-01.03); additionally remove gender markers `(m/f/d)`, `(m/w/d)`, `(f/m/x)`, `m/k`, `(all genders)` before punctuation is replaced; level words are **kept** |
 | `CanonicalKey.Of(company, title, country)` | `Company(company) + "\|" + Title(title) + "\|" + upper(country ?? "xx")` |
 | `Lifecycle.Next(state, event)` | the table in §6.4; any other pair is an error value, not an exception |
 | `Prefilter.Evaluate(rawOffer, criteria, blocklist)` | §6.6 stage 1; returns `Pass` or `Reject(reasonId)` |
