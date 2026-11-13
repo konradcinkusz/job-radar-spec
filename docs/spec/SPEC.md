@@ -152,7 +152,7 @@ Dependency budget:
 | Project | Allowed packages |
 |---|---|
 | `Core`, `ServiceDefaults` (beyond OpenTelemetry), `AppHost` (beyond Aspire) | none |
-| `ServiceDefaults` | `OpenTelemetry.*` |
+| `ServiceDefaults` | `OpenTelemetry.*`, `Microsoft.Extensions.Logging.Console` (JSON log format; amended 2026-11-13 during T-00.03) |
 | `Config` | `YamlDotNet` |
 | `Sources` | `Microsoft.Playwright`, `Microsoft.Extensions.Resilience` |
 | `Store` | `Microsoft.EntityFrameworkCore.Sqlite`; `Microsoft.EntityFrameworkCore.Design` as build tooling only |
