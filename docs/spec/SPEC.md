@@ -731,7 +731,7 @@ this repository: a stage's days start when the stage's previous gate is claimed.
 
 | Gate | Passes when (observable, on Linux hosted runners) | Proof (DECISIONS D-19) |
 |---|---|---|
-| **M0** | The solution scaffold builds; every job of §9 is green three times in a row on one commit; `daily.yml` dispatched with `profile=fake` is green on a hosted runner; the two real results of D-20 exist | CI run links on one named commit; the dispatch run link; `docs/spikes/first-real-result.md` |
+| **M0** | The solution scaffold builds; every job of §9 is green three times in a row on one commit; `daily.yml` dispatched with `profile=fake` is green on a hosted runner; the two real results of D-20 exist (the Copilot one produced by the owner locally, T-00.05) | CI run links on one named commit; the dispatch run link; `docs/spikes/first-real-result.md` |
 | **M1** (Stage 0 exit) | Greenhouse, Ashby and Remotive adapters run live; 7 consecutive daily runs without a failed job; the duplicate audit returns 0 on each | the 7 run URLs and the audit output of each |
 | **M2** (Stage 1 exit) | Extractor, Scorer and Reporter run live in the allow-listed sessions; the live tool-surface check passes; offline evals are green and shown able to fail; `jobradar calibrate` shows at least 80% agreement over two weeks of the owner's marks | run URLs; the calibrate output with the date range; the eval-live run URL |
 | **M3** (Stage 2 exit) | No Fluff Jobs, justjoin.it, Adzuna (ES, PL), We Work Remotely and Lever run; liveness checks run; 7 consecutive healthy daily runs; the owner's sample of 20 reported offers has no wrong `alive` | run URLs; the owner's sample result recorded in the PR that claims the gate |
