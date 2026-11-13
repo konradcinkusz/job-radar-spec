@@ -11,14 +11,13 @@ Rules, checked by `scripts/check-spec.sh` where a script can check them:
 - "Implemented" is not a status. Code on a branch with unit tests green is `open-green`; it says nothing about a gate.
 - Every claim has the date it was measured. A claim nobody re-measured is stale, not true.
 
-State of this specification itself (2026-11-12): written, not yet confirmed by the owner (DECISIONS `Status: open`, PROPOSED rows
-pending). No endpoint of any source has been called. No Copilot SDK code has been run.
+State of this specification itself (2026-11-13): decisions recorded (DECISIONS `Status: decided`). No endpoint of any source has been called. No Copilot SDK code has been run.
 
 | Task | Status | Evidence (PR or run link) | Measured | Notes |
 |---|---|---|---|---|
-| T-00.01 | not-started | | | owner: Owner decisions recorded |
+| T-00.01 | merged | https://github.com/konradcinkusz/job-radar-spec/pull/2 | 2026-11-13 | owner: Owner decisions recorded (owner delegated all decisions to the director on 2026-11-12; D-25, D-29 deferred with dates) |
 | T-00.02 | not-started | | | owner: Repository, settings and the Copilot token |
-| T-00.03 | not-started | | | supervisor: Scaffold and empty pipeline green |
+| T-00.03 | in-flight | | | supervisor: Scaffold and empty pipeline green. Draft PR https://github.com/konradcinkusz/job-radar/pull/1 prepared before T-00.02; will not merge until the owner confirms T-00.02 and CI is green three times |
 | T-00.04 | not-started | | | supervisor: First vertical slice against the real things |
 | T-01.01 | not-started | | | supervisor: Contracts frozen |
 | T-01.02 | not-started | | | implementer: Core: ids and hashes |
@@ -110,7 +109,6 @@ What is still unproven although the text exists. This list is part of every stat
 
 ## Owner actions outstanding
 
-- Answer the PROPOSED rows of `DECISIONS.md` in one message (T-00.01).
 - Create the private repository `job-radar`, its settings, the environment `copilot` and the fine-grained token with the Copilot Requests permission; set a reminder 7 days before the token's 90-day expiry (T-00.02).
 - Name the Greenhouse or Ashby board slugs for the first probe, and 30 slugs for the first company list (T-00.04, T-01.15).
 - Complete the sentence that broke off at the end of the analysis ("with all the sources and ...", D-29).
