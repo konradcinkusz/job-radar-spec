@@ -20,10 +20,10 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-00.03 | merged | PR https://github.com/konradcinkusz/job-radar/pull/1 (squash `e7cfb45`); CI on one commit `037f890`, three green attempts: https://github.com/konradcinkusz/job-radar/actions/runs/43385096931 (attempts 1-3); CI on main https://github.com/konradcinkusz/job-radar/actions/runs/43398099998; daily.yml dispatch `profile=fake`, five jobs green: https://github.com/konradcinkusz/job-radar/actions/runs/43398113597 | 2026-11-13 | supervisor: Scaffold and empty pipeline green. Merged on the owner's explicit 'merguj' before T-00.02 was confirmed. Not shown: that the Copilot CLI download happened on the runner (log not read) |
 | T-00.04 | in-flight | probe run https://github.com/konradcinkusz/job-radar/actions/runs/43508296521; spike PR https://github.com/konradcinkusz/job-radar/pull/2 (merged); fixtures PR https://github.com/konradcinkusz/job-radar/pull/4 (open) | 2026-11-13 | supervisor: probe done (6 of 7 sources answer 200; justjoin.it endpoint unknown), spike program built with `--fake`; the real Copilot result is T-00.05 (owner) |
 | T-00.05 | not-started | | | owner: Real Copilot session, run locally (needs the spike program of T-00.04) |
-| T-01.01 | in-flight | PR https://github.com/konradcinkusz/job-radar/pull/5 (local build and 16 tests green 2026-11-13; CI not yet read) | 2026-11-13 | supervisor: Contracts frozen. `ISourceHttp` moved to Core (TASKS T-01.11 amended) |
-| T-01.02 | not-started | | | implementer: Core: ids and hashes |
-| T-01.03 | not-started | | | implementer: Core: normaliser and canonical key |
-| T-01.04 | not-started | | | implementer: Core: lifecycle state machine |
+| T-01.01 | merged | PR https://github.com/konradcinkusz/job-radar/pull/5 (squash `18ee571`); CI run https://github.com/konradcinkusz/job-radar/actions/runs/43509479947 (4 jobs green) | 2026-11-13 | supervisor: Contracts frozen. `ISourceHttp` moved to Core (TASKS T-01.11 amended in job-radar-spec PR 7) |
+| T-01.02 | in-flight | | | implementer: Core: ids and hashes Haiku 5.5 session session_01RjKhVNjWW84CEF3J9qVVZ8 started 2026-11-13 |
+| T-01.03 | in-flight | | | implementer: Core: normaliser and canonical key Haiku 5.5 session session_01RjKhVMewPZdq1NDAAQFvfY started 2026-11-13 |
+| T-01.04 | in-flight | | | implementer: Core: lifecycle state machine Haiku 5.5 session session_01RjKhVNK5KVfbqZbF3yxQu4 started 2026-11-13 |
 | T-01.05 | not-started | | | implementer: Core: prefilter |
 | T-01.06 | not-started | | | implementer: Config: loaders and validation |
 | T-01.07 | not-started | | | implementer: Store: schema, first migration, FTS5 |
