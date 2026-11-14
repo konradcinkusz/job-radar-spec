@@ -196,7 +196,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Verify: common verify
 
 ### T-01.12 Sources: Greenhouse adapter
-- Executor: implementer · Milestone: M1 · Depends: T-01.11, T-00.04
+- Executor: implementer · Milestone: M1 · Depends: T-01.11, T-01.28, T-00.04
 - Read: SPEC §6.3; SOURCES §3 and §4 (Greenhouse); the fixtures and notes of T-00.04
 - Files: `src/JobRadar.Sources/Greenhouse/**`, `tests/JobRadar.Sources.Tests/GreenhouseTests.cs`
 - Do: 1) `GreenhouseSource : IJobSource` (`Id = "greenhouse"`, `Kind = Ats`) taking the company slugs from the source config; `DiscoverAsync` requests `boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true` once per slug through `ISourceHttp`; one slug failing is recorded in `Errors` and does not stop the others. 2) `Normalize` maps to `RawOffer`: HTML description to text, location to `location`, country when derivable from a country name or code in the location else null, `work_mode` only if the posting says remote/hybrid/on-site in a structured field, else `unknown`. 3) `Health()`.
@@ -204,7 +204,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Verify: common verify
 
 ### T-01.13 Sources: Ashby adapter
-- Executor: implementer · Milestone: M1 · Depends: T-01.11, T-00.04
+- Executor: implementer · Milestone: M1 · Depends: T-01.11, T-01.28, T-00.04
 - Read: SPEC §6.3; SOURCES §3 and §4 (Ashby)
 - Files: `src/JobRadar.Sources/Ashby/**`, `tests/JobRadar.Sources.Tests/AshbyTests.cs`
 - Do: as T-01.12 for `api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true`, with compensation mapped to `salary_min`, `salary_max`, `currency`, `salary_period` only when present, and unlisted postings skipped.
@@ -212,7 +212,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Verify: common verify
 
 ### T-01.14 Sources: Remotive adapter
-- Executor: implementer · Milestone: M1 · Depends: T-01.11, T-00.04
+- Executor: implementer · Milestone: M1 · Depends: T-01.11, T-01.28, T-00.04
 - Read: SPEC §6.3, A-11; SOURCES §4 (Remotive)
 - Files: `src/JobRadar.Sources/Remotive/**`, `tests/JobRadar.Sources.Tests/RemotiveTests.cs`
 - Do: as T-01.12 for `remotive.com/api/remote-jobs` (`Kind = Aggregator`), setting `RawOffer.Attribution = "Remotive"`, `posted_at` from the source's date, `work_mode = remote`.
@@ -313,6 +313,14 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Files: `src/JobRadar.Config/Loading/BlocklistLoader.cs`, `src/JobRadar.Config/Loading/ReportLoader.cs`, `config/blocklist.yaml`, `config/report.yaml`, `tests/JobRadar.Config.Tests/BlocklistReportLoaderTests.cs`
 - Do: 1) `ConfigLoader.LoadBlocklist(path)` returning the companies normalised with `Normalizer.Company` as an `IReadOnlySet<string>` inside a `ConfigResult`. 2) `ConfigLoader.LoadReport(path)` returning `ReportConfig(int Threshold, bool RequireScore, IReadOnlyDictionary<string,string> Labels)`; `report.yaml` carries `threshold: 70`, `require_score: false` and the Polish labels of SPEC §6.8 (column headings `data`, `firma`, `rola`, `link`, `tryb pracy`, `ścieżka`, `widełki`, `status`, `kod`; section headings `Nie ocenione`, `Zdrowie źródeł`, `Koszt`; the unverified status label `niezweryfikowana`) under stable English keys. 3) An empty blocklist file with a comment is valid. 4) Validation: unknown keys and a threshold outside 0–100 are errors naming file, path and rule.
 - Accept: `Blocklist_is_normalised`; `Empty_blocklist_is_valid`; `Report_seed_loads_with_polish_labels`; `Report_threshold_out_of_range_is_an_error`; `Report_unknown_key_is_an_error_naming_the_path`.
+- Verify: common verify
+
+### T-01.28 Sources: shared text and country helpers
+- Executor: implementer · Milestone: M1 · Depends: T-01.01
+- Read: SPEC §6.3 (adapters carry text, not markup), SOURCES §4 (Greenhouse: entity-escaped HTML), COPILOT-SDK §6 (descriptions stay text for agents)
+- Files: `src/JobRadar.Sources/Common/HtmlText.cs`, `src/JobRadar.Sources/Common/CountryResolver.cs`, `tests/JobRadar.Sources.Tests/CommonTests/**`
+- Do: 1) `HtmlText.ToPlainText(string html)`: decode HTML entities once when the input holds entity-escaped tags (`&lt;h2&gt;`, as Greenhouse returns them), drop `script` and `style` elements with their content, turn `<br>` and the closing tags of `p`, `div`, `li`, `h1`–`h6`, `tr` into line breaks, prefix each `<li>` with `- `, remove every other tag, decode entities again, collapse runs of blank lines to one, trim. 2) `CountryResolver.FromLocation(string? location)` returning an upper-case ISO 3166-1 alpha-2 code or null: a country NAME (English or the local form) for the countries of SPEC Appendix A plus `US` and `CA`, found as a whole word anywhere in the location, or an alpha-2 CODE that is the last comma-separated segment (upper case, exactly two letters, in the same set); null when neither is present (a bare city does not resolve).
+- Accept: `Entity_escaped_html_becomes_text`; `Plain_html_becomes_text`; `List_items_become_lines`; `Script_and_style_are_dropped`; `Entities_are_decoded`; `Country_name_resolves`; `Local_country_name_resolves`; `Trailing_code_resolves`; `Bare_city_is_null`; `Null_or_blank_is_null`.
 - Verify: common verify
 
 ---
