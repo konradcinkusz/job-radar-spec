@@ -139,11 +139,11 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Accept: one passing and one rejecting test per reason id; `Title_keyword_ai_does_not_match_inside_words`; `Hybrid_without_days_passes`; `Unknown_country_passes`; `Reasons_are_checked_in_the_documented_order`.
 - Verify: common verify
 
-### T-01.06 Config: loaders and validation
+### T-01.06 Config: sources and criteria loaders, validation, lock
 - Executor: implementer · Milestone: M1 · Depends: T-01.01
 - Read: SPEC §6.2, Appendices A and B; SOURCES §2
-- Files: `src/JobRadar.Config/**`, `config/sources.yaml`, `config/criteria.yaml`, `config/criteria.lock`, `config/blocklist.yaml`, `config/report.yaml`, `tests/JobRadar.Config.Tests/**`
-- Do: 1) `ConfigLoader.LoadSources(path)`, `LoadCriteria(path)`, `LoadBlocklist(path)`, `LoadReport(path)` returning immutable `Core` types, or a `ConfigError` list naming file, path and rule. 2) Validation rules of SPEC §6.2: unknown keys, source id pattern, forbidden ids `linkedin` and `indeed` with a message citing D-03, slug pattern, positive integer version, thresholds, track letters. 3) `CriteriaLock.Check(criteriaPath, lockPath)`: SHA-256 of the file against the lock; the lock file format is two lines `version: N` and `sha256: <hex>`. 4) Write the seed files from Appendices A and B, an empty blocklist with a comment, and `report.yaml` with the Polish labels of SPEC §6.8 and `threshold: 70`, `require_score: false`. 5) Generate the first `criteria.lock` with a small script and commit it.
+- Files: `src/JobRadar.Config/Loading/**`, `src/JobRadar.Config/Validation/**`, `config/sources.yaml`, `config/criteria.yaml`, `config/criteria.lock`, `scripts/make-criteria-lock.sh`, `tests/JobRadar.Config.Tests/ConfigLoaderTests.cs`, `tests/JobRadar.Config.Tests/CriteriaLockTests.cs`
+- Do: 1) `ConfigError(string File, string Path, string Rule)` and `ConfigResult<T>(T? Value, IReadOnlyList<ConfigError> Errors)`; `ConfigLoader.LoadSources(path)` and `ConfigLoader.LoadCriteria(path)` returning immutable `Core` types (`SourceConfig` list, `Criteria`) inside a `ConfigResult`, errors naming file, path and rule. 2) Validation rules of SPEC §6.2: unknown keys, source id pattern, forbidden ids `linkedin` and `indeed` with a message citing D-03, slug pattern, positive integer version, thresholds, track letters. 3) `CriteriaLock.Check(criteriaPath, lockPath)`: SHA-256 of the file against the lock; the lock file format is two lines `version: N` and `sha256: <hex>`. 4) Write the seed files `config/sources.yaml` and `config/criteria.yaml` from SPEC Appendices B and A. 5) `scripts/make-criteria-lock.sh` writes `config/criteria.lock` from `config/criteria.yaml` (version read from the file); run it and commit the lock. (T-01.26 adds the blocklist and report loaders; split from this task on 2026-11-13 because the original task exceeded the size limit.)
 - Accept: `Seed_files_load_without_errors`; `Unknown_key_is_an_error_naming_the_path`; `Linkedin_source_is_refused_citing_D03`; `Indeed_source_is_refused_citing_D03`; `Lock_mismatch_fails_when_content_changed_but_version_did_not`; `Lock_ok_when_version_and_hash_both_changed`.
 - Verify: common verify
 
@@ -228,7 +228,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Verify: common verify
 
 ### T-01.17 Cli: ingest
-- Executor: implementer · Milestone: M1 · Depends: T-01.05, T-01.06, T-01.08, T-01.09, T-01.10
+- Executor: implementer · Milestone: M1 · Depends: T-01.05, T-01.06, T-01.26, T-01.08, T-01.09, T-01.10
 - Read: SPEC §6.9 (`ingest` row), §5 R7, R8, §13
 - Files: `src/JobRadar.Cli/Commands/IngestCommand.cs`, `src/JobRadar.Cli/Stages/IngestStage.cs`, `tests/JobRadar.Cli.Tests/IngestTests.cs`
 - Do: 1) `IngestStage.RunAsync` reads `raw/*.jsonl` and the config; for each offer: prefilter (set `prefilter_reason`), upsert, then group recompute for touched keys; then `Expiry.RecordMissedAsync` per source with the source's health, then `Expiry.ArchiveAsync`. 2) After the upsert it runs every registered `IIngestHook` (none yet). 3) Writes `ingest-result.json`: per source counts, ids of new and changed offers, counts by prefilter reason, and the ratio `passed prefilter ÷ ingested`. 4) `IngestCommand : ICliCommand` implements `jobradar ingest`.
@@ -236,7 +236,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Verify: common verify
 
 ### T-01.18 Cli: scrape
-- Executor: implementer · Milestone: M1 · Depends: T-01.12, T-01.13, T-01.14, T-01.16, T-01.06
+- Executor: implementer · Milestone: M1 · Depends: T-01.12, T-01.13, T-01.14, T-01.16, T-01.06, T-01.26
 - Read: SPEC §6.9 (`scrape` row), R8, R9, R11
 - Files: `src/JobRadar.Cli/Commands/ScrapeCommand.cs`, `src/JobRadar.Cli/Stages/ScrapeStage.cs`, `tests/JobRadar.Cli.Tests/ScrapeTests.cs`
 - Do: 1) For each enabled source of the requested group, run `Discover`, then `FetchDetail` only for ids the store does not know (a read-only `IKnownOffers` over the database), then `Normalize`; write `raw/<source>.jsonl` (one `RawOffer` per line) and `scrape-summary.json` with counts, errors and the verdict of `HealthEvaluator` (reading the last healthy counts). 2) Each source in its own `try/catch` and its own 10-minute `CancellationToken`. 3) On a parse error write the raw body to `artifacts/failures/<source>/`.
@@ -298,6 +298,14 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Do: 1) Ask the owner to approve enabling the `schedule: cron '0 5 * * *'` trigger (DECISIONS D-18) and add it. 2) After 7 consecutive scheduled runs, list the run URLs, the duration of each, the audit output of each, and any run that failed with its cause. 3) Checkpoint (SUPERVISOR §9).
 - Accept: seven consecutive runs, none with a failed job; the duplicate audit printed 0 in each; the durations are within SPEC §13; or the gate is reported as failed with evidence.
 - Verify: the run URLs.
+
+### T-01.26 Config: blocklist and report loaders
+- Executor: implementer · Milestone: M1 · Depends: T-01.06, T-01.03
+- Read: SPEC §6.2, §6.6 (blocklist), §6.8 (labels, columns); T-01.06 (the `ConfigError` and `ConfigResult<T>` types)
+- Files: `src/JobRadar.Config/Loading/BlocklistLoader.cs`, `src/JobRadar.Config/Loading/ReportLoader.cs`, `config/blocklist.yaml`, `config/report.yaml`, `tests/JobRadar.Config.Tests/BlocklistReportLoaderTests.cs`
+- Do: 1) `ConfigLoader.LoadBlocklist(path)` returning the companies normalised with `Normalizer.Company` as an `IReadOnlySet<string>` inside a `ConfigResult`. 2) `ConfigLoader.LoadReport(path)` returning `ReportConfig(int Threshold, bool RequireScore, IReadOnlyDictionary<string,string> Labels)`; `report.yaml` carries `threshold: 70`, `require_score: false` and the Polish labels of SPEC §6.8 (column headings `data`, `firma`, `rola`, `link`, `tryb pracy`, `ścieżka`, `widełki`, `status`, `kod`; section headings `Nie ocenione`, `Zdrowie źródeł`, `Koszt`; the unverified status label `niezweryfikowana`) under stable English keys. 3) An empty blocklist file with a comment is valid. 4) Validation: unknown keys and a threshold outside 0–100 are errors naming file, path and rule.
+- Accept: `Blocklist_is_normalised`; `Empty_blocklist_is_valid`; `Report_seed_loads_with_polish_labels`; `Report_threshold_out_of_range_is_an_error`; `Report_unknown_key_is_an_error_naming_the_path`.
+- Verify: common verify
 
 ---
 
@@ -656,7 +664,7 @@ allows, whatever this table permits. Supervisor tasks run between waves.
 |---|---|---|
 | 0 | T-00.01 → T-00.02 → T-00.03 → T-00.04 (in order, never parallel); T-00.05 (owner, local) runs beside Phase 1 | — |
 | 1 | T-01.01 (director alone) | T-00.04 |
-| 2 | T-01.02, T-01.03, T-01.04, T-01.06, T-01.07, T-01.11, T-01.16, T-01.19 (disjoint folders) | T-01.01 |
+| 2 | T-01.02, T-01.03, T-01.04, T-01.06, T-01.07, T-01.11, T-01.16, T-01.19 (disjoint folders); T-01.26 after T-01.06 and T-01.03 | T-01.01 |
 | 3 | T-01.05, T-01.08, T-01.12, T-01.13, T-01.14 | T-01.03 for T-01.05; T-01.07 and T-01.02 for T-01.08; T-01.11 for the adapters |
 | 4 | T-01.09, T-01.10 | T-01.08 |
 | 5 | T-01.17, T-01.18 | T-01.05, T-01.06, T-01.09, T-01.10 for T-01.17; T-01.12–T-01.14, T-01.16 for T-01.18 |
