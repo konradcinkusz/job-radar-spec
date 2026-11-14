@@ -182,9 +182,17 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 ### T-01.11 Sources: HTTP policy, fixture replay, robots guard
 - Executor: implementer · Milestone: M1 · Depends: T-01.01
 - Read: SPEC §5 R9, R11, §6.3; `service-api-patterns` (hardened outbound calls)
-- Files: `src/JobRadar.Sources/Http/**`, `tests/JobRadar.Sources.Tests/HttpTests/**`
-- Do: 1) `ISourceHttp` (`GetAsync(Uri, CancellationToken)` and `PostAsync(Uri, string contentType, string body, CancellationToken)`), `HttpResult(int Status, string ContentType, string Body, IReadOnlyDictionary<string,string> Headers)` and `ISourceLog` already exist in `JobRadar.Core.Ports` (T-01.01; amended 2026-11-13 because `SourceContext` carries them and Core cannot reference Sources). This task implements them. 2) `PlaywrightSourceHttp : ISourceHttp` (GET and POST) using `IAPIRequestContext`, with the User-Agent of R9, a per-host random delay of 1–3 s (delay source injected for tests), at most 3 hosts at once, 30 s request timeout, 2 retries with back-off 2 s and 8 s on 429 and 5xx honouring `Retry-After` up to 60 s, a request counter. 3) `FixtureSourceHttp : ISourceHttp` that serves files from a folder by a mapping `url → file`, and fails loudly for an unmapped url. 4) `RobotsGuard.IsAllowedAsync(Uri, ISourceHttp)` parsing `User-agent: *` rules (Allow, Disallow, longest match), caching per host; an unreachable `robots.txt` allows.
-- Accept: `Retries_on_503_twice_then_fails`; `Does_not_retry_on_404`; `Honours_retry_after_up_to_the_cap`; `Delay_is_applied_between_requests_to_one_host`; `Never_more_than_three_hosts_at_once`; `Fixture_http_fails_on_unmapped_url`; `Robots_longest_match_wins`; `Robots_unreachable_allows`. The delay and retry tests use an injected fake delay and a fake handler; none calls the network.
+- Files: `src/JobRadar.Sources/Http/PolicySourceHttp.cs`, `src/JobRadar.Sources/Http/IRawHttp.cs`, `src/JobRadar.Sources/Http/FixtureSourceHttp.cs`, `src/JobRadar.Sources/Http/RobotsGuard.cs`, `tests/JobRadar.Sources.Tests/HttpTests/**`
+- Do: (split on 2026-11-13: the Playwright transport is T-01.27.) 1) `ISourceHttp`, `HttpResult` and `ISourceLog` already exist in `JobRadar.Core.Ports` (T-01.01). Define in Sources `IRawHttp { Task<HttpResult> SendAsync(RawHttpRequest request, CancellationToken ct); }` with `RawHttpRequest(HttpMethodKind Method, Uri Url, string? ContentType, string? Body, string UserAgent, TimeSpan Timeout)` and `enum HttpMethodKind { Get, Post }`: one network attempt, no policy. 2) `PolicySourceHttp : ISourceHttp` wrapping an `IRawHttp` and an `IDelay` (`Task DelayAsync(TimeSpan, CancellationToken)`, a test double replaces it), implementing the policy of SPEC R9 and R11: User-Agent `JobRadar/1.0 (personal use)`, a per-host random delay of 1–3 s before each request to a host after the first (the random source is injected as `Func<double>` returning 0..1), at most 3 hosts at once, 30 s request timeout passed to the transport, 2 retries with back-off 2 s then 8 s on status 429 and 5xx and on a transport exception, honouring `Retry-After` (seconds) up to 60 s, a request counter per host; GET only is retried, a POST is never retried. 3) `FixtureSourceHttp : ISourceHttp` serving files from a folder by a mapping `url → file`, failing loudly (an exception naming the url) for an unmapped url. 4) `RobotsGuard.IsAllowedAsync(Uri, ISourceHttp)` parsing `User-agent: *` rules (Allow, Disallow, longest match), caching per host; an unreachable `robots.txt` allows.
+- Accept: `Retries_on_503_twice_then_fails`; `Does_not_retry_on_404`; `Honours_retry_after_up_to_the_cap`; `Post_is_never_retried`; `Delay_is_applied_between_requests_to_one_host`; `Never_more_than_three_hosts_at_once`; `Fixture_http_fails_on_unmapped_url`; `Robots_longest_match_wins`; `Robots_unreachable_allows`. The delay and retry tests use an injected fake delay and a fake `IRawHttp`; none calls the network.
+- Verify: common verify
+
+### T-01.27 Sources: Playwright transport
+- Executor: implementer · Milestone: M1 · Depends: T-01.11
+- Read: SPEC §5 R9, R11, §6.3; T-01.11 (`IRawHttp`, `RawHttpRequest`)
+- Files: `src/JobRadar.Sources/Http/PlaywrightRawHttp.cs`, `tests/JobRadar.Sources.Tests/HttpTests/PlaywrightRawHttpTests.cs`
+- Do: `PlaywrightRawHttp : IRawHttp, IAsyncDisposable` using Playwright's `IAPIRequestContext` (HTTP only, no browser): one context per instance, the request's User-Agent and timeout applied, GET and POST (the body with the given content type), the response mapped to `HttpResult(status, content type, body text, headers lower-cased)`; a non-2xx status is a result, not an exception; a transport failure throws.
+- Accept: `Get_returns_status_body_and_content_type`; `Post_sends_the_body_and_content_type`; `Non_success_status_is_a_result_not_an_exception`; `User_agent_is_sent`; `Timeout_is_applied`. Tests run against a tiny in-process `HttpListener` on a loopback port (no internet).
 - Verify: common verify
 
 ### T-01.12 Sources: Greenhouse adapter
@@ -236,7 +244,7 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Verify: common verify
 
 ### T-01.18 Cli: scrape
-- Executor: implementer · Milestone: M1 · Depends: T-01.12, T-01.13, T-01.14, T-01.16, T-01.06, T-01.26
+- Executor: implementer · Milestone: M1 · Depends: T-01.12, T-01.13, T-01.14, T-01.16, T-01.06, T-01.26, T-01.27
 - Read: SPEC §6.9 (`scrape` row), R8, R9, R11
 - Files: `src/JobRadar.Cli/Commands/ScrapeCommand.cs`, `src/JobRadar.Cli/Stages/ScrapeStage.cs`, `tests/JobRadar.Cli.Tests/ScrapeTests.cs`
 - Do: 1) For each enabled source of the requested group, run `Discover`, then `FetchDetail` only for ids the store does not know (a read-only `IKnownOffers` over the database), then `Normalize`; write `raw/<source>.jsonl` (one `RawOffer` per line) and `scrape-summary.json` with counts, errors and the verdict of `HealthEvaluator` (reading the last healthy counts). 2) Each source in its own `try/catch` and its own 10-minute `CancellationToken`. 3) On a parse error write the raw body to `artifacts/failures/<source>/`.
@@ -667,7 +675,7 @@ allows, whatever this table permits. Supervisor tasks run between waves.
 | 2 | T-01.02, T-01.03, T-01.04, T-01.06, T-01.07, T-01.11, T-01.16, T-01.19 (disjoint folders); T-01.26 after T-01.06 and T-01.03 | T-01.01 |
 | 3 | T-01.05, T-01.08, T-01.12, T-01.13, T-01.14 | T-01.03 for T-01.05; T-01.07 and T-01.02 for T-01.08; T-01.11 for the adapters |
 | 4 | T-01.09, T-01.10 | T-01.08 |
-| 5 | T-01.17, T-01.18 | T-01.05, T-01.06, T-01.09, T-01.10 for T-01.17; T-01.12–T-01.14, T-01.16 for T-01.18 |
+| 5 | T-01.17, T-01.18 (T-01.27 before T-01.18) | T-01.05, T-01.06, T-01.09, T-01.10 for T-01.17; T-01.12–T-01.14, T-01.16 for T-01.18 |
 | 6 | T-01.20 | T-01.17, T-01.19 |
 | 7 | T-01.23, T-01.24 (then director: T-01.21, T-01.22, T-01.25) | T-01.17, T-01.20 |
 | 8 | T-02.02, T-02.04, T-02.05, T-02.07, T-02.09 | T-02.01 (T-02.09 also T-01.17) |
