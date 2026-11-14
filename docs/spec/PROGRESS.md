@@ -24,10 +24,10 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.02 | merged | PR https://github.com/konradcinkusz/job-radar/pull/7 (squash `74f05f4`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510364495 (4 jobs green) | 2026-11-13 | implementer (Haiku 5.5): Core: ids and hashes. Director re-ran the known vector with `sha256sum` and checked the NFC/NFD test strings differ in code points |
 | T-01.03 | merged | PR https://github.com/konradcinkusz/job-radar/pull/8 (squash `0f95aee`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510397767 (4 jobs green) | 2026-11-13 | implementer (Haiku 5.5): Core: normaliser and canonical key. SPEC `Title` row clarified: no legal-form removal in titles (director decision). Main CI after merge not yet read |
 | T-01.04 | merged | PR https://github.com/konradcinkusz/job-radar/pull/6 (squash `a00eb52`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510239966 (4 jobs green); main https://github.com/konradcinkusz/job-radar/actions/runs/43510439806 | 2026-11-13 | implementer (Haiku 5.5): Core: lifecycle state machine. Director mutated one table row locally and saw 2 tests fail |
-| T-01.05 | in-flight | | | implementer: Core: prefilter Haiku 5.5 session session_01RjKhVNQvZ9yq8BiQhyESR7 started 2026-11-13 |
-| T-01.06 | not-started | | | implementer: Config: sources and criteria loaders, validation, lock (narrowed 2026-11-13; blocklist and report loaders are T-01.26) |
-| T-01.07 | in-flight | | | implementer: Store: schema, first migration, FTS5 Haiku 5.5 session session_01RjKhVNDP2U63xwee9hQvZH started 2026-11-13 |
-| T-01.08 | not-started | | | implementer: Store: upsert and change detection |
+| T-01.05 | merged | PR https://github.com/konradcinkusz/job-radar/pull/10 (squash `c5e8bc7`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43575981919 (4 jobs green) | 2026-11-14 | implementer (Haiku 5.5): Core: prefilter. Session hit an account usage limit after one minute and was resumed from its branch. Director ran the 18 tests and a mutation (substring match for `ai`): `Title_keyword_ai_does_not_match_inside_words` failed |
+| T-01.06 | in-flight | | | implementer: Config: sources and criteria loaders, validation, lock (narrowed 2026-11-13; blocklist and report loaders are T-01.26) Haiku 5.5 session session_01RjKhVMMrz9SomxH9bkKNZF started 2026-11-14 |
+| T-01.07 | merged | PR https://github.com/konradcinkusz/job-radar/pull/11 (squash `ac6d30c`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43576170678 (4 jobs green); main https://github.com/konradcinkusz/job-radar/actions/runs/43576825688 | 2026-11-14 | implementer (Haiku 5.5): Store: schema, first migration, FTS5. 447 hand-written lines (over the 400 guard; accepted by the director as declarative code) plus about 1 500 generated migration lines. Director compared every column name of the six tables with SPEC §6.4 (all match) and removed the update trigger: `Fts_reflects_an_update` failed |
+| T-01.08 | in-flight | | | implementer: Store: upsert and change detection Haiku 5.5 session session_01RjKhVLwDti2Cjj7MbZQ4W9 started 2026-11-14 |
 | T-01.09 | not-started | | | implementer: Store: canonical groups and primary choice |
 | T-01.10 | not-started | | | implementer: Store: expiry, archive, runs |
 | T-01.11 | not-started | | | implementer: Sources: HTTP policy, fixture replay, robots guard |
@@ -35,10 +35,10 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.13 | not-started | | | implementer: Sources: Ashby adapter |
 | T-01.14 | not-started | | | implementer: Sources: Remotive adapter |
 | T-01.15 | not-started | | | owner: Company lists |
-| T-01.16 | in-flight | | | implementer: Core: health evaluator Haiku 5.5 session session_01RjKhVQDt5y4kPzBz8mmfPR started 2026-11-13 |
+| T-01.16 | merged | PR https://github.com/konradcinkusz/job-radar/pull/9 (squash `ba2ce57`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43575946920 (4 jobs green) | 2026-11-14 | implementer (Haiku 5.5): Core: health evaluator. Director changed `<` to `<=`: `Exactly_twenty_percent_is_healthy` failed |
 | T-01.17 | not-started | | | implementer: Cli: ingest |
 | T-01.18 | not-started | | | implementer: Cli: scrape |
-| T-01.19 | not-started | | | implementer: Core: report composer |
+| T-01.19 | in-flight | | | implementer: Core: report composer Haiku 5.5 session session_01RjKhVMa4CroYXS3f3BhFEE started 2026-11-14 |
 | T-01.20 | not-started | | | implementer: Cli: publish and health |
 | T-01.21 | not-started | | | supervisor: daily.yml, Stage 0 |
 | T-01.22 | not-started | | | supervisor: AppHost fake profile, run-all, getting started |
@@ -102,6 +102,8 @@ evidence. Say exactly what the proof covers and what it does not (platform, star
 
 ## Not shown yet
 
+- Whether the combined `main` stays green as more tasks merge: the last read is run 43576825688 on `ac6d30c` (2026-11-14).
+- Whether the standards checklist (P1-P15) holds for the implementers' code: their sessions reported the standards skills were not available, so the checklist item in each PR is unchecked.
 What is still unproven although the text exists. This list is part of every status report.
 
 - Source detail endpoints, Adzuna, the justjoin.it listing endpoint, and how stable any response shape is over days (SPEC §12.1 A-01, A-07); the first probe of 2026-11-13 covered one request per source.
