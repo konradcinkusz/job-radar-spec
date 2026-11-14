@@ -25,11 +25,11 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.03 | merged | PR https://github.com/konradcinkusz/job-radar/pull/8 (squash `0f95aee`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510397767 (4 jobs green) | 2026-11-13 | implementer (Haiku 5.5): Core: normaliser and canonical key. SPEC `Title` row clarified: no legal-form removal in titles (director decision). Main CI after merge not yet read |
 | T-01.04 | merged | PR https://github.com/konradcinkusz/job-radar/pull/6 (squash `a00eb52`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43510239966 (4 jobs green); main https://github.com/konradcinkusz/job-radar/actions/runs/43510439806 | 2026-11-13 | implementer (Haiku 5.5): Core: lifecycle state machine. Director mutated one table row locally and saw 2 tests fail |
 | T-01.05 | merged | PR https://github.com/konradcinkusz/job-radar/pull/10 (squash `c5e8bc7`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43575981919 (4 jobs green) | 2026-11-14 | implementer (Haiku 5.5): Core: prefilter. Session hit an account usage limit after one minute and was resumed from its branch. Director ran the 18 tests and a mutation (substring match for `ai`): `Title_keyword_ai_does_not_match_inside_words` failed |
-| T-01.06 | in-flight | | | implementer: Config: sources and criteria loaders, validation, lock (narrowed 2026-11-13; blocklist and report loaders are T-01.26) Haiku 5.5 session session_01RjKhVMMrz9SomxH9bkKNZF started 2026-11-14 |
+| T-01.06 | merged | PR https://github.com/konradcinkusz/job-radar/pull/14 (squash `0a26102`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43577498597 (4 jobs green); main https://github.com/konradcinkusz/job-radar/actions/runs/43578094579 | 2026-11-14 | implementer (Haiku 5.5): Config: sources and criteria loaders, validation, lock (narrowed). About 920 hand-written lines, twice the guard; accepted by the director because it was finished and verified: seed files diffed equal to SPEC Appendices A and B, lock hash equal to an independent `sha256sum`, three mutations caught (`indeed` not forbidden, R15 rule removed, slug pattern loosened) |
 | T-01.07 | merged | PR https://github.com/konradcinkusz/job-radar/pull/11 (squash `ac6d30c`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43576170678 (4 jobs green); main https://github.com/konradcinkusz/job-radar/actions/runs/43576825688 | 2026-11-14 | implementer (Haiku 5.5): Store: schema, first migration, FTS5. 447 hand-written lines (over the 400 guard; accepted by the director as declarative code) plus about 1 500 generated migration lines. Director compared every column name of the six tables with SPEC §6.4 (all match) and removed the update trigger: `Fts_reflects_an_update` failed |
-| T-01.08 | in-flight | | | implementer: Store: upsert and change detection Haiku 5.5 session session_01RjKhVLwDti2Cjj7MbZQ4W9 started 2026-11-14 |
-| T-01.09 | not-started | | | implementer: Store: canonical groups and primary choice |
-| T-01.10 | not-started | | | implementer: Store: expiry, archive, runs |
+| T-01.08 | merged | PR https://github.com/konradcinkusz/job-radar/pull/12 (squash `79b2aba`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43577263937 (4 jobs green) | 2026-11-14 | implementer (Haiku 5.5): Store: upsert and change detection. Two mutations (`last_seen_at`, `missed_runs` not updated) turned 4 and 2 tests red. Finding for later: the upsert looks up existing ids with one `IN (...)` query, fine up to the 10 000-offer cap of justjoin.it, to be chunked if a source can exceed SQLite's variable limit |
+| T-01.09 | in-flight | | | implementer: Store: canonical groups and primary choice Haiku 5.5 session session_01RjKhVQCefphrtfQnrzRz8j started 2026-11-14 |
+| T-01.10 | in-flight | | | implementer: Store: expiry, archive, runs Haiku 5.5 session session_01RjKhVN9wQ5efEfMrfAotQw started 2026-11-14 |
 | T-01.11 | not-started | | | implementer: Sources: HTTP policy, fixture replay, robots guard |
 | T-01.12 | not-started | | | implementer: Sources: Greenhouse adapter |
 | T-01.13 | not-started | | | implementer: Sources: Ashby adapter |
@@ -38,14 +38,14 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.16 | merged | PR https://github.com/konradcinkusz/job-radar/pull/9 (squash `ba2ce57`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43575946920 (4 jobs green) | 2026-11-14 | implementer (Haiku 5.5): Core: health evaluator. Director changed `<` to `<=`: `Exactly_twenty_percent_is_healthy` failed |
 | T-01.17 | not-started | | | implementer: Cli: ingest |
 | T-01.18 | not-started | | | implementer: Cli: scrape |
-| T-01.19 | in-flight | | | implementer: Core: report composer Haiku 5.5 session session_01RjKhVMa4CroYXS3f3BhFEE started 2026-11-14 |
+| T-01.19 | merged | PR https://github.com/konradcinkusz/job-radar/pull/13 (squash `96b8481`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43577451949 (4 jobs green) | 2026-11-14 | implementer (Haiku 5.5): Core: report composer. Director compared the golden file with the expected text of his brief: byte-identical. Two mutations (sort order, pipe escaping) turned the named tests red |
 | T-01.20 | not-started | | | implementer: Cli: publish and health |
 | T-01.21 | not-started | | | supervisor: daily.yml, Stage 0 |
 | T-01.22 | not-started | | | supervisor: AppHost fake profile, run-all, getting started |
 | T-01.23 | not-started | | | implementer: Cli: query and the duplicate audit; pipeline test |
 | T-01.24 | not-started | | | implementer: Store: size guard |
 | T-01.25 | not-started | | | supervisor: Stage 0 gate: seven days |
-| T-01.26 | not-started | | | implementer: Config: blocklist and report loaders (split from T-01.06) |
+| T-01.26 | in-flight | | | implementer: Config: blocklist and report loaders (split from T-01.06) Haiku 5.5 session session_01RjKhVNUpU3ZxQuuj3VcJTz started 2026-11-14 |
 | T-02.01 | not-started | | | supervisor: Copilot SDK spike, in depth |
 | T-02.02 | not-started | | | implementer: Agents: runner contract, fake runner, public-surface test |
 | T-02.03 | not-started | | | implementer: Agents: Copilot runner |
@@ -102,7 +102,7 @@ evidence. Say exactly what the proof covers and what it does not (platform, star
 
 ## Not shown yet
 
-- Whether the combined `main` stays green as more tasks merge: the last read is run 43576825688 on `ac6d30c` (2026-11-14).
+- Whether the combined `main` stays green as more tasks merge: the last read is run 43578094579 on `0a26102` (2026-11-14, contains T-01.02 to T-01.08, T-01.16, T-01.19).
 - Whether the standards checklist (P1-P15) holds for the implementers' code: their sessions reported the standards skills were not available, so the checklist item in each PR is unchecked.
 What is still unproven although the text exists. This list is part of every status report.
 
