@@ -54,11 +54,11 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-02.02 | merged | PR https://github.com/konradcinkusz/job-radar/pull/42 (squash `865762f`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43906766390 (green) | 2026-11-16 | implementer (Haiku 5.5): Agents: FakeAgentRunner and the public-surface walker. Director's mutations (strict JSON, terminal tool ends the turn) turned tests red. Depends no longer on T-02.01 (DECISIONS log 2026-11-16) |
 | T-02.03 | not-started | | | implementer: Agents: Copilot runner |
 | T-02.04 | merged | PR https://github.com/konradcinkusz/job-radar/pull/41 (squash `21eee1e`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43905717729 (green) | 2026-11-16 | implementer (Haiku 5.5): Agents: prompt packaging and batching (embedded prompt files are not wired: csproj is director-only). Mutations (12 000 cut, batch size) turned tests red |
-| T-02.05 | not-started | | | implementer: Agents: tool arguments and strict reading |
-| T-02.06 | not-started | | | implementer: Agents: Extractor |
+| T-02.05 | merged | PR https://github.com/konradcinkusz/job-radar/pull/47 (squash `0c1b8aa`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43913026729 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Agents: tool arguments and strict reading. Surviving mutation (AllowTrailingCommas) closed by Trailing_comma_is_rejected, re-run by the director: test fails with the mutation. Wire names snake_case (FakeAgentRunner still camelCase: director follow-up) |
+| T-02.06 | in-progress | | | implementer session started 2026-11-16 (Haiku 5.5): Agents: Extractor |
 | T-02.07 | merged | PR https://github.com/konradcinkusz/job-radar/pull/40 (squash `ef2fb68`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43900704151 (green) | 2026-11-16 | implementer (Haiku 5.5): Core: hard exclusions. Mutations (Spain penalty, office days threshold) turned tests red |
 | T-02.08 | not-started | | | implementer: Agents: Scorer |
-| T-02.09 | not-started | | | implementer: Store: fields, scores, usage, pending queries |
+| T-02.09 | merged | PR https://github.com/konradcinkusz/job-radar/pull/46 (squash `9d56061`) | 2026-11-16 | implementer (Haiku 5.5): Store: enrichment repository and one-line OfferUpsert fix; 4 mutations killed |
 | T-02.10 | not-started | | | implementer: Cli: enrich and the cost guard |
 | T-02.11 | not-started | | | implementer: Agents: Reporter and report integration |
 | T-02.12 | not-started | | | implementer: Evals: offline scenario suite |
