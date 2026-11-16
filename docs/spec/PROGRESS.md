@@ -52,12 +52,12 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-01.30 | merged | PR https://github.com/konradcinkusz/job-radar/pull/38 (squash `c0fbd9b`); CI run https://github.com/konradcinkusz/job-radar/actions/runs/43894645316 (green, same tree as the merged head) | 2026-11-16 | supervisor: no data-branch commit when only the database bytes change (python `iterdump` hash). Shown on a local bare repository; not yet shown on GitHub with a second same-day dispatch after the change |
 | T-02.01 | not-started | | | supervisor: Copilot SDK spike, in depth |
 | T-02.02 | merged | PR https://github.com/konradcinkusz/job-radar/pull/42 (squash `865762f`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43906766390 (green) | 2026-11-16 | implementer (Haiku 5.5): Agents: FakeAgentRunner and the public-surface walker. Director's mutations (strict JSON, terminal tool ends the turn) turned tests red. Depends no longer on T-02.01 (DECISIONS log 2026-11-16) |
-| T-02.03 | not-started | | | implementer: Agents: Copilot runner |
+| T-02.03 | in-progress | | | implementer session started 2026-11-16 (Haiku 5.5): Agents: Copilot runner (compile only, nothing run against the SDK) |
 | T-02.04 | merged | PR https://github.com/konradcinkusz/job-radar/pull/41 (squash `21eee1e`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43905717729 (green) | 2026-11-16 | implementer (Haiku 5.5): Agents: prompt packaging and batching (embedded prompt files are not wired: csproj is director-only). Mutations (12 000 cut, batch size) turned tests red |
 | T-02.05 | merged | PR https://github.com/konradcinkusz/job-radar/pull/47 (squash `0c1b8aa`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43913026729 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Agents: tool arguments and strict reading. Surviving mutation (AllowTrailingCommas) closed by Trailing_comma_is_rejected, re-run by the director: test fails with the mutation. Wire names snake_case (FakeAgentRunner still camelCase: director follow-up) |
-| T-02.06 | in-progress | | | implementer session started 2026-11-16 (Haiku 5.5): Agents: Extractor |
+| T-02.06 | merged | PR https://github.com/konradcinkusz/job-radar/pull/49 (squash `156b704`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43920384782 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Agents: Extractor. Director's mutations first left 5 surviving (b2b/employer/languages not-found, case-insensitive compare, confidence steps); the implementer added tests, all killed on re-check. Prompt is mirrored in C# (csproj is director-only); embed it later |
 | T-02.07 | merged | PR https://github.com/konradcinkusz/job-radar/pull/40 (squash `ef2fb68`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43900704151 (green) | 2026-11-16 | implementer (Haiku 5.5): Core: hard exclusions. Mutations (Spain penalty, office days threshold) turned tests red |
-| T-02.08 | not-started | | | implementer: Agents: Scorer |
+| T-02.08 | in-progress | | | implementer session started 2026-11-16 (Haiku 5.5): Agents: Scorer |
 | T-02.09 | merged | PR https://github.com/konradcinkusz/job-radar/pull/46 (squash `9d56061`) | 2026-11-16 | implementer (Haiku 5.5): Store: enrichment repository and one-line OfferUpsert fix; 4 mutations killed |
 | T-02.10 | not-started | | | implementer: Cli: enrich and the cost guard |
 | T-02.11 | not-started | | | implementer: Agents: Reporter and report integration |
@@ -68,7 +68,7 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-02.16 | not-started | | | implementer: Agents: bring-your-own-key runner |
 | T-02.17 | not-started | | | supervisor: Security review |
 | T-02.18 | not-started | | | supervisor: Stage 1 gate: two weeks |
-| T-02.19 | not-started | | | implementer: Agents: Claude CLI runner (subscription), D-32 |
+| T-02.19 | merged | PR https://github.com/konradcinkusz/job-radar/pull/48 (squash `782bde9`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43918128199 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Claude CLI runner, fake ICliRunner only; the real CLI was never run (owner's local test). Mutation `Accepted && EndsTurn` survived first, test added | | | implementer: Agents: Claude CLI runner (subscription), D-32 |
 | T-03.00 | not-started | | | owner: Adzuna account |
 | T-03.01 | not-started | | | implementer: Sources: Lever adapter |
 | T-03.02 | not-started | | | implementer: Sources: No Fluff Jobs adapter |
