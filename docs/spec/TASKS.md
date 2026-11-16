@@ -323,6 +323,22 @@ Exit: 7 consecutive daily runs without a failed job; duplicate audit 0 on each.
 - Accept: `Entity_escaped_html_becomes_text`; `Plain_html_becomes_text`; `List_items_become_lines`; `Script_and_style_are_dropped`; `Entities_are_decoded`; `Country_name_resolves`; `Local_country_name_resolves`; `Trailing_code_resolves`; `Bare_city_is_null`; `Null_or_blank_is_null`.
 - Verify: common verify
 
+### T-01.29 Prefilter precision (title exclusions, US states)
+- Executor: supervisor · Milestone: M1 · Depends: T-01.05, T-01.28
+- Read: SPEC §6.6 Stage 1, Appendix A; DECISIONS D-27; the live dry run of 2026-11-15 (9 566 ingested, 404 reported)
+- Files: `src/JobRadar.Core/Models/Records.cs` (`Criteria.TitleExclude`), `src/JobRadar.Core/Filtering/Prefilter.cs`, `src/JobRadar.Sources/Common/CountryResolver.cs`, `src/JobRadar.Config/**`, `config/criteria.yaml`, `config/criteria.lock`, their tests
+- Do: 1) `criteria.title_exclude`: list of words or phrases; a normalised title containing one as a whole token (phrase) is rejected with the new reason id `title-excluded` (sixth reason; checked after `title-no-keyword`). Start list: sales, recruiter, recruiting, talent, marketing, counsel, attorney, paralegal, accountant, accounting, payroll, "customer success", "account executive", "account manager", designer, "product manager", "program manager", "business development". 2) `CountryResolver`: a trailing two-letter US state code (the 50 states and DC, including `CA`) resolves to `US`, so `City, CA` is outside `criteria.countries` and is rejected as `country-outside-scope`. 3) `version: 2`, new `criteria.lock` (R15).
+- Accept: `Excluded_title_word_is_rejected`; `Excluded_word_inside_another_word_is_not_matched`; `Title_with_keyword_and_no_excluded_word_passes`; `Trailing_us_state_resolves_to_us`; `Criteria_seed_loads_with_title_exclude`; the live dry run reports fewer than 150 rows.
+- Verify: common verify; the dry-run URL.
+
+### T-01.30 Data branch: no commit when only the database bytes changed
+- Executor: supervisor · Milestone: M1 · Depends: T-01.21
+- Read: SPEC R7, R13; the R7 check of 2026-11-15 (same rows, new database bytes, new commit)
+- Files: `scripts/publish-data.sh`
+- Do: before copying `jobradar.db`, compare the logical content of the new and the committed database (`sqlite3 <db> .dump`, SHA-256) and skip the file when they are equal; the report file is always compared as bytes.
+- Accept: a second same-day publish makes no commit (shown on a local bare repository and then by a second dispatch).
+- Verify: the dispatch URLs and `git log` of `data`.
+
 ---
 
 ## Phase 2 — Stage 1: agents (milestone M2)
@@ -338,7 +354,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: the `probe-copilot` run URLs.
 
 ### T-02.02 Agents: runner contract, fake runner, public-surface test
-- Executor: implementer · Milestone: M2 · Depends: T-01.01, T-02.01
+- Executor: implementer · Milestone: M2 · Depends: T-01.01  (amended 2026-11-16: T-02.01 removed, the fake runner needs no live model)
 - Read: SPEC §6.5, §7; `COPILOT-SDK.md` §9
 - Files: `src/JobRadar.Agents/Fake/**`, `tests/JobRadar.Agents.Tests/FakeRunnerTests.cs`, `tests/JobRadar.Agents.Tests/PublicSurfaceTests.cs`
 - Do: 1) `FakeAgentRunner : IAgentRunner` driven by a `Script` (list of steps: `ToolCall(name, jsonArguments)`, `Text(string)`, `Timeout`, `Unavailable`, `Usage(in, out, credits?)`). It feeds each tool call through the request's tool handlers exactly as the real runner will (deserialise strictly into `ArgumentsType`, call the handler, return the message), refuses a tool name not in the request, and ends the turn after a successful call of a tool with `EndsTurn`. 2) `PublicSurfaceTests`: by reflection, no public type of `JobRadar.Agents` exposes a type from a namespace starting with `GitHub.Copilot` or `Microsoft.Extensions.AI`.
@@ -472,6 +488,14 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Do: 1) Remind the owner to mark each reported offer `fit` or `nofit` for two weeks. 2) After two weeks run `jobradar calibrate` and attach the output. 3) If agreement is below 80%, open tasks to adjust prompts, criteria version or threshold (each a new `criteria.yaml` version) and measure again; do not claim the gate.
 - Accept: calibrate output with the date range and the list of feedback entries; agreement at least 80% for the gate; otherwise reported as failed with the disagreements.
 - Verify: the run log with the calibrate output.
+
+### T-02.19 Agents: Claude CLI runner (subscription)
+- Executor: implementer · Milestone: M2 · Depends: T-02.02, T-02.04, T-02.05
+- Read: DECISIONS D-32; SPEC §6.5, §5 R3, R4, R5, R12; the source: `konradcinkusz/inference-polska-core` `src/InferenceNode.ClaudeBridge/ClaudeCliBackend.cs`, `Transcript.cs` and ADR-0015 (the director pastes the relevant parts into the brief)
+- Files: `src/JobRadar.Agents/Claude/**`, `tests/JobRadar.Agents.Tests/ClaudeRunnerTests.cs`
+- Do: 1) `ICliRunner` seam (file, args, stdin, timeout) with a `ProcessCliRunner`; `ClaudeCliAgentRunner : IAgentRunner` for `Agents:Runner = claude-cli`. 2) One call = one `claude -p --output-format json --tools "" --no-session-persistence` process with the prompt on stdin: the CLI acts as a plain model. The tools of the request are described in the system prompt and the model answers with `<tool_call>{"name":...,"arguments":{...}}</tool_call>` blocks; each block is parsed and fed through the request's tool handlers exactly as the fake runner does (strict deserialisation, refusal of an unknown tool name, a rejection shown to the model in a follow-up call, at most 3 rounds, `EndsTurn` ends the turn). 3) `Status`: `claude auth status` JSON `loggedIn` true is `Ready`, a missing CLI is `Unavailable`, not signed in is `NotAuthenticated`; never an exception. 4) Usage: tokens from the CLI's JSON when present, `AiCredits` always null. 5) Nothing the CLI prints (stdout or stderr) is logged: it can quote the prompt. No SDK type in a public signature.
+- Accept: `Tool_call_block_is_parsed_and_handled`; `Invalid_arguments_are_rejected_then_valid_accepted`; `Unknown_tool_is_refused`; `Terminal_tool_ends_the_turn`; `Missing_cli_gives_Unavailable_without_exception`; `Not_signed_in_gives_NotAuthenticated`; `Cli_output_is_never_logged`; `Timeout_is_reported`; `Public_surface_has_no_sdk_types`. All with a fake `ICliRunner`: no process is started in CI.
+- Verify: common verify; the owner's local run with a signed-in `claude` (not CI).
 
 ---
 

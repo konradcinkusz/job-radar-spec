@@ -416,7 +416,7 @@ public sealed record AgentRun(IReadOnlyList<ToolCallRecord> ToolCalls, string? F
 ```
 
 - **Implementations:** `CopilotAgentRunner` (the SDK), `ByokAgentRunner` (the same SDK with `SessionConfig.Provider`, for an
-  OpenAI-compatible, Azure or Anthropic endpoint, T-02.16), `FakeAgentRunner` (scripted, §7).
+  OpenAI-compatible, Azure or Anthropic endpoint, T-02.16), `FakeAgentRunner` (scripted, §7), `ClaudeCliAgentRunner` (the Claude Code CLI on the owner's machine, DECISIONS D-32, T-02.19; selected by `Agents:Runner`, never run in GitHub Actions).
 - **Session rules (R3), all for the Copilot runner:** client in `CopilotClientMode.Empty`; per session `AvailableTools` lists
   exactly the custom tool names of the request; every custom tool is defined with `SkipPermission = true` and, for the one
   that returns the result, `IsTerminal = true`; `OnPermissionRequest` rejects everything; `SystemMessage` in `Replace` mode;
@@ -466,6 +466,7 @@ the model said. The evals of §10 carry a class of adversarial descriptions.
 | `mode-hybrid-heavy` | the source says `hybrid` and `office_days_per_week > criteria.max_office_days_per_week`; a hybrid offer with no stated days passes |
 | `blocklist-company` | the normalised company is in `config/blocklist.yaml` (agencies, software houses; grown by hand; the Scorer may add proposals to the daily summary, never to the file) |
 | `country-outside-scope` | the country is known and not in `criteria.countries` |
+| `title-excluded` | the normalised title contains a whole word or phrase of `criteria.title_exclude` (T-01.29; checked after `title-no-keyword`) |
 
 The report states how many offers each reason removed. The ratio of offers sent to agents to offers ingested is printed per run
 (the analysis expects one order of magnitude; it is measured, §13).
@@ -743,7 +744,7 @@ this repository: a stage's days start when the stage's previous gate is claimed.
 Values from the analysis of 12 November 2026. Any change is a new `version` (R15).
 
 ```yaml
-version: 1
+version: 1      # the repository's config/criteria.yaml is version 2 once T-01.29 is merged
 countries: [AT, BE, BG, CH, CY, CZ, DE, DK, EE, ES, FI, FR, GB, GR, HR, HU, IE, IS, IT, LT, LU, LV, MT, NL, NO, PL, PT, RO, SE, SI, SK, UA, RS]
 max_office_days_per_week: 1
 office_exception_countries: [ES]
@@ -753,6 +754,7 @@ require_contract: b2b               # B2B through a sole proprietorship (JDG)
 direct_employers_only: true
 threshold: 70
 title_keywords: [ai, ml, llm, ".net", dotnet, "c#", backend, "back-end", "machine learning", "generative"]
+title_exclude: [sales, recruiter, recruiting, talent, marketing, counsel, attorney, paralegal, accountant, accounting, payroll, "customer success", "account executive", "account manager", designer, "product manager", "program manager", "business development"]   # from version 2 (T-01.29)
 tracks:
   A: { enabled: true,  label: "Mid AI Engineer",        seniority: [mid],    role_family: [ai_engineer] }
   B: { enabled: true,  label: "Senior, .NET main stack", seniority: [senior], stack_main: [dotnet] }
