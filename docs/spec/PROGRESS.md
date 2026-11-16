@@ -68,7 +68,7 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-02.16 | not-started | | | implementer: Agents: bring-your-own-key runner |
 | T-02.17 | not-started | | | supervisor: Security review |
 | T-02.18 | not-started | | | supervisor: Stage 1 gate: two weeks |
-| T-02.19 | merged | PR https://github.com/konradcinkusz/job-radar/pull/48 (squash `782bde9`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43918128199 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Claude CLI runner, fake ICliRunner only; the real CLI was never run (owner's local test). Mutation `Accepted && EndsTurn` survived first, test added | | | implementer: Agents: Claude CLI runner (subscription), D-32 |
+| T-02.19 | merged | PR https://github.com/konradcinkusz/job-radar/pull/48 (squash `782bde9`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43918128199 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Claude CLI runner, fake ICliRunner only; the real CLI was never run (owner's local test). Mutation `Accepted && EndsTurn` survived first, test added |
 | T-03.00 | not-started | | | owner: Adzuna account |
 | T-03.01 | not-started | | | implementer: Sources: Lever adapter |
 | T-03.02 | not-started | | | implementer: Sources: No Fluff Jobs adapter |
