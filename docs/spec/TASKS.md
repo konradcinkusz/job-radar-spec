@@ -518,7 +518,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: common verify
 
 ### T-03.02 Sources: No Fluff Jobs adapter
-- Executor: implementer · Milestone: M3 · Depends: T-01.11
+- Executor: — (NOT BUILT, D-35: robots.txt disallows the API and the posting pages) · Milestone: M3 · Depends: T-01.11
 - Read: SPEC §6.3, A-07; SOURCES §4
 - Files: `src/JobRadar.Sources/NoFluffJobs/**`, `tests/JobRadar.Sources.Tests/NoFluffJobsTests.cs`, `tests/fixtures/nofluffjobs/**`
 - Do: adapter for the search and detail endpoints, from the recorded fixtures; pay range (mandatory on that site) mapped to salary fields; stops after `Scrape:MaxPagesPerSource` (default 20).
@@ -566,7 +566,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: common verify
 
 ### T-03.08 daily.yml with verify and the Stage 2 sources
-- Executor: supervisor · Milestone: M3 · Depends: T-03.07, T-03.01, T-03.02, T-03.03, T-03.04, T-03.05
+- Executor: supervisor · Milestone: M3 · Depends: T-03.07, T-03.01, T-03.03, T-03.04, T-03.05 (T-03.02 dropped, D-35)
 - Read: SPEC §6.9; SPEC §7 (report rows with `unverified`)
 - Files: `.github/workflows/daily.yml`, `config/sources.yaml`
 - Do: replace the `verify` placeholder with the real command; enable the Stage 2 sources one at a time, each after one live dispatch showing it healthy; add the issue labelled `source-health` upsert for unhealthy sources.
