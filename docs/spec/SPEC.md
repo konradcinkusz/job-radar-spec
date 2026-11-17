@@ -515,7 +515,8 @@ Output: Markdown with these parts in this order:
 
 1. Title with the run date and the Reporter summary when present.
 2. Table, one row per offer, columns `data | firma | rola | link | tryb pracy | ścieżka | widełki | status | kod` in the order
-   score descending, then `first_seen_at`. `status` is `alive`, or `unverified` shown as "niezweryfikowana". `kod` is the
+   position of the offer's country in `criteria.country_priority` (D-37; other and unknown countries after every priority country;
+   no list: no such step), then score descending, then `first_seen_at`. `status` is `alive`, or `unverified` shown as "niezweryfikowana". `kod` is the
    eight-character code.
 3. "Nie ocenione": the number of offers left pending by budget, a missing token or an error.
 4. "Zdrowie źródeł": one line per source with a count, the median and an alert when unhealthy; sources that were not run say so.
@@ -745,6 +746,7 @@ Values from the analysis of 12 November 2026. Any change is a new `version` (R15
 
 ```yaml
 version: 1      # the repository's config/criteria.yaml is version 2 once T-01.29 is merged
+country_priority: [PL]               # optional: offers of these countries come first in the report, in this order (D-37)
 countries: [AT, BE, BG, CH, CY, CZ, DE, DK, EE, ES, FI, FR, GB, GR, HR, HU, IE, IS, IT, LT, LU, LV, MT, NL, NO, PL, PT, RO, SE, SI, SK, UA, RS]
 max_office_days_per_week: 1
 office_exception_countries: [ES]
