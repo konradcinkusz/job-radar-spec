@@ -69,16 +69,16 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-02.17 | done with an open blocker | PR https://github.com/konradcinkusz/job-radar/pull/61 (squash `2fa6b80`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43950511038 (green, 4 checks) | 2026-11-16 | supervisor: `docs/security/REVIEW-1.md` (static review, not a pentest). Fixed with tests: F-1 markdown/HTML in report cells, F-2 `claude -p` cwd, F-3 regex timeout, F-4 fork guard on `ci.yml`, F-6 `persist-credentials`. **Open, owner:** F-5 environment `copilot` deployment branches = `main`; F-4 runner container check; F-7 runner image. **L-1 blocks claiming M2**: the live tool surface of a real Copilot session was never observed (T-00.05, T-02.13) |
 | T-02.18 | not-started | | | supervisor: Stage 1 gate: two weeks |
 | T-02.19 | merged | PR https://github.com/konradcinkusz/job-radar/pull/48 (squash `782bde9`); PR CI https://github.com/konradcinkusz/job-radar/actions/runs/43918128199 (green, 4 checks) | 2026-11-16 | implementer (Haiku 5.5): Claude CLI runner, fake ICliRunner only; the real CLI was never run (owner's local test). Mutation `Accepted && EndsTurn` survived first, test added |
-| T-03.00 | not-started | | | owner: Adzuna account |
-| T-03.01 | not-started | | | implementer: Sources: Lever adapter |
-| T-03.02 | not-started | | | implementer: Sources: No Fluff Jobs adapter |
-| T-03.03 | not-started | | | implementer: Sources: justjoin.it adapter |
-| T-03.04 | not-started | | | implementer: Sources: Adzuna adapter |
-| T-03.05 | not-started | | | implementer: Sources: We Work Remotely adapter |
-| T-03.06 | not-started | | | implementer: Sources: liveness checker |
-| T-03.07 | not-started | | | implementer: Cli: verify |
-| T-03.08 | not-started | | | supervisor: daily.yml with verify and the Stage 2 sources |
-| T-03.09 | not-started | | | supervisor: Stage 2 gate |
+| T-03.00 | blocked:owner | | 2026-11-17 | owner: Adzuna account and the secrets ADZUNA_APP_ID, ADZUNA_APP_KEY. Not provided; the adapter is built and disabled in sources.yaml |
+| T-03.01 | merged | PR https://github.com/konradcinkusz/job-radar/pull/64 | 2026-11-17 | implementer (Haiku 5.5): Lever adapter. Disabled: the company list is empty (T-03.10, owner). Fixture shape recorded (spotify) |
+| T-03.02 | not built | D-35 | 2026-11-17 | No Fluff Jobs: robots.txt disallows /api/ and /posting/ (R9), owner decision to revisit |
+| T-03.03 | merged | PRs https://github.com/konradcinkusz/job-radar/pull/74 (adapter, 6 survivors closed by tests), pull/80 (BOM before the XML declaration), pull/82 (100 pages a run) ; live dry run https://github.com/konradcinkusz/job-radar/actions/runs/44088736024 (scrape healthy: 11063 listed, 99 pages read in 5 min 17 s, 1 error no JobPosting; ingest 99 new, 12 passed prefilter) | 2026-11-17 | implementer (Haiku 5.5) + director fixes. Enabled in sources.yaml (PR 77). Unproven: field mapping quality (country, salary), the real daily rate (cap tuned from it), stability over days |
+| T-03.04 | merged | PR https://github.com/konradcinkusz/job-radar/pull/70 | 2026-11-17 | implementer (Haiku 5.5): Adzuna adapter, keys never logged (scrub tested in plain and escaped form). Disabled until the keys exist |
+| T-03.05 | merged | PR https://github.com/konradcinkusz/job-radar/pull/65 ; live dry run https://github.com/konradcinkusz/job-radar/actions/runs/44074881029 (99 offers, 0 errors) | 2026-11-17 | implementer (Haiku 5.5): We Work Remotely. Enabled (PR 76). Unproven: field mapping quality |
+| T-03.06 | merged | PR https://github.com/konradcinkusz/job-radar/pull/66 | 2026-11-17 | implementer (Haiku 5.5): liveness checker. Marker seeds in config/liveness-markers.yaml are not recorded from live pages |
+| T-03.07 | merged | PR https://github.com/konradcinkusz/job-radar/pull/69 ; live run https://github.com/konradcinkusz/job-radar/actions/runs/44070236967 (318 checked: 144 alive, 2 dead, 172 unverified, 13 min) | 2026-11-17 | implementer (Haiku 5.5): verify command. Unproven: why 172 of 318 are unverified (no reason breakdown in verify-summary.json) |
+| T-03.08 | in-flight | PRs https://github.com/konradcinkusz/job-radar/pull/73 (verify job, hosted), pull/76 (weworkremotely), pull/77 (justjoinit), pull/78 and pull/79 (errors in the run log) | 2026-11-17 | supervisor: verify job runs live; sources enabled one at a time after a live dispatch (weworkremotely healthy, justjoinit healthy after PRs 80 and 82). Not done: Lever (no companies), Adzuna (no keys), the source-health issue upsert |
+| T-03.09 | blocked:T-02.18, T-03.08 | | 2026-11-17 | supervisor: Stage 2 gate needs 7 consecutive healthy runs with all Stage 2 sources; the sources were enabled on 2026-11-17 |
 | T-03.10 | not-started | | | owner: Company list growth |
 | T-04.00 | not-started | | | owner: Runner decision and InfoJobs account |
 | T-04.01 | not-started | | | implementer: Sources: browser context factory |
@@ -92,6 +92,12 @@ State of this specification itself (2026-11-13): decisions recorded (DECISIONS `
 | T-05.04 | not-started | | | supervisor: repair.yml |
 | T-05.05 | not-started | | | supervisor: Repair evals and the Stage 4 gate |
 | T-05.06 | not-started | | | supervisor: Final architecture review and documents |
+
+## Stage 2 and the geography request (2026-11-17)
+
+- Enabled and healthy on a live dry run: weworkremotely, justjoinit. Built and disabled: Lever (empty list), Adzuna (no keys). Not built: No Fluff Jobs (D-35).
+- D-37 (owner request): the report lists Polish offers first (`criteria.country_priority: [PL]`, job-radar PR https://github.com/konradcinkusz/job-radar/pull/81). An order only, no score bonus. Not shown: that the Polish sources produce Polish offers in the daily report (justjoinit: 99 offers read on the live dry run, the country of each was not inspected).
+- Fixed on the way, each from a live failure: a test that depended on the commit hash (PR 75), fake transport serving README files (PR 76), a byte order mark before the XML declaration of the justjoin.it sitemap (PR 80), a per-source timeout of ten minutes with a cap of 300 pages (PR 82).
 
 ## CI and infrastructure (2026-11-16)
 
