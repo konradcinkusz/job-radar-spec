@@ -502,7 +502,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 ## Phase 3 — Stage 2: portals, ATS list, liveness (milestone M3)
 
 ### T-03.00 Adzuna account
-- Executor: owner · Milestone: M3 · Depends: T-02.18
+- Executor: owner · Milestone: M3 · Depends: — (D-34)
 - Read: SOURCES §2 (Adzuna)
 - Files: — (repository secrets)
 - Do: Register at the Adzuna developer site; store `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` as repository secrets; extend the company list to 50–150 slugs in the director's message (T-03.10).
@@ -510,7 +510,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: the owner confirms in the PR.
 
 ### T-03.01 Sources: Lever adapter
-- Executor: implementer · Milestone: M3 · Depends: T-01.11, T-02.18
+- Executor: implementer · Milestone: M3 · Depends: T-01.11
 - Read: SPEC §6.3; SOURCES §2, §3, §4 (Lever is "indirect": probe first)
 - Files: `src/JobRadar.Sources/Lever/**`, `tests/JobRadar.Sources.Tests/LeverTests.cs`, `tests/fixtures/lever/**`
 - Do: as T-01.12 for `api.lever.co/v0/postings/{slug}?mode=json`, from the fixture recorded by `probe.yml` (the director records it first; if the shape differs, SOURCES.md is amended first).
@@ -518,7 +518,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: common verify
 
 ### T-03.02 Sources: No Fluff Jobs adapter
-- Executor: implementer · Milestone: M3 · Depends: T-01.11, T-02.18
+- Executor: implementer · Milestone: M3 · Depends: T-01.11
 - Read: SPEC §6.3, A-07; SOURCES §4
 - Files: `src/JobRadar.Sources/NoFluffJobs/**`, `tests/JobRadar.Sources.Tests/NoFluffJobsTests.cs`, `tests/fixtures/nofluffjobs/**`
 - Do: adapter for the search and detail endpoints, from the recorded fixtures; pay range (mandatory on that site) mapped to salary fields; stops after `Scrape:MaxPagesPerSource` (default 20).
@@ -526,7 +526,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: common verify
 
 ### T-03.03 Sources: justjoin.it adapter
-- Executor: implementer · Milestone: M3 · Depends: T-01.11, T-02.18
+- Executor: implementer · Milestone: M3 · Depends: T-01.11
 - Read: SPEC §6.3, A-07; SOURCES §4
 - Files: `src/JobRadar.Sources/JustJoinIt/**`, `tests/JobRadar.Sources.Tests/JustJoinItTests.cs`, `tests/fixtures/justjoinit/**`
 - Do: adapter for the listing endpoint and the `JobPosting` JSON-LD of an offer page (JSON-LD first, as SPEC §6.3 orders extraction), no `page=` use, stop at the 10 000 cap.
@@ -542,7 +542,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: common verify
 
 ### T-03.05 Sources: We Work Remotely adapter
-- Executor: implementer · Milestone: M3 · Depends: T-01.11, T-02.18
+- Executor: implementer · Milestone: M3 · Depends: T-01.11
 - Read: SPEC §6.3; SOURCES §4 (WWR)
 - Files: `src/JobRadar.Sources/WeWorkRemotely/**`, `tests/JobRadar.Sources.Tests/WeWorkRemotelyTests.cs`, `tests/fixtures/weworkremotely/**`
 - Do: RSS adapter for the main feed and the category feeds in `sources.yaml`, `work_mode = remote`, region from the feed item when present.
@@ -574,7 +574,7 @@ Exit: Extractor, Scorer and Reporter run live inside closed sessions; offline ev
 - Verify: the run URLs.
 
 ### T-03.09 Stage 2 gate
-- Executor: supervisor · Milestone: M3 · Depends: T-03.08
+- Executor: supervisor · Milestone: M3 · Depends: T-03.08, T-02.18 (D-34: M2 is claimed before M3)
 - Read: SPEC §14 (M3), §13; SUPERVISOR §9
 - Files: `docs/spec/PROGRESS.md` (specification repository)
 - Do: 7 consecutive healthy runs with all Stage 2 sources; ask the owner to check a sample of 20 reported offers for a wrong `alive`; record durations against the 60-minute target; checkpoint; the owner decides D-25 here.
