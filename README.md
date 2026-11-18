@@ -21,6 +21,7 @@ from the spec-driven template of that estate, from the owner's analysis of 12 No
 | [`docs/spec/COPILOT-SDK.md`](docs/spec/COPILOT-SDK.md) | How the Copilot SDK is used here, what comes from the chess arena, what comes only from the package documentation, and the questions the first spike answers |
 | [`docs/spec/TASKS.md`](docs/spec/TASKS.md) | 70 tasks in 6 phases, each one pull request, sized for a small model, with the waves that may run together |
 | [`docs/spec/SUPERVISOR.md`](docs/spec/SUPERVISOR.md) | The director's protocol, including how to work with Haiku 5.5 implementers (§10) |
+| [`docs/frontend/README.md`](docs/frontend/README.md) | Proposal and clickable proof of concept (`poc.html`) for a front end; not part of the spec until D-03 is changed |
 | [`docs/spec/DIRECTOR-PROMPT.md`](docs/spec/DIRECTOR-PROMPT.md) | The first message for the director session |
 | [`docs/spec/PROGRESS.md`](docs/spec/PROGRESS.md) | Measured state: every task and gate, what is not shown yet, owner actions outstanding |
 | [`docs/adr/`](docs/adr/) | Six ADRs: the deviations from the standards and the decisions that shape the agents |

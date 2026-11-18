@@ -1,0 +1,339 @@
+<title>JobRadar Panel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: one working surface. A sticky bar with the day and five views; each view is summary first, detail below. */
+:root{
+  --bg:#f3f5f6; --surface:#ffffff; --sunken:#e9edef; --line:#d5dce0;
+  --fg:#16242b; --muted:#566871; --accent:#0c6b74; --accent-soft:#d9eef0; --on-accent:#ffffff;
+  --good:#1f7a4d; --good-soft:#dcf1e5; --warn:#9a6200; --warn-soft:#fbecd0; --bad:#b3372f; --bad-soft:#f8dedb;
+  --pl:#b3372f;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10181c; --surface:#18232a; --sunken:#0c1317; --line:#2b3a42;
+  --fg:#e4ecef; --muted:#93a5ad; --accent:#56c2cc; --accent-soft:#143a40; --on-accent:#06262a;
+  --good:#5fca93; --good-soft:#143524; --warn:#e3b055; --warn-soft:#3b2c0d; --bad:#ef8a80; --bad-soft:#42201c;
+  --pl:#ef8a80; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#10181c; --surface:#18232a; --sunken:#0c1317; --line:#2b3a42;
+  --fg:#e4ecef; --muted:#93a5ad; --accent:#56c2cc; --accent-soft:#143a40; --on-accent:#06262a;
+  --good:#5fca93; --good-soft:#143524; --warn:#e3b055; --warn-soft:#3b2c0d; --bad:#ef8a80; --bad-soft:#42201c;
+  --pl:#ef8a80; color-scheme:dark }
+
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px}
+.brand{font-family:var(--cond);font-weight:600;font-size:20px;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+.brand svg{flex:none}
+nav{display:flex;flex-wrap:wrap;gap:4px}
+nav a{padding:6px 12px;border-radius:6px;color:var(--muted);text-decoration:none;font-weight:500}
+nav a:hover{background:var(--sunken);color:var(--fg)}
+nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.day{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+select,input[type=search]{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{padding-block:20px 48px;display:grid;gap:20px}
+h1{font-family:var(--cond);font-weight:600;font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-family:var(--cond);font-weight:600;font-size:18px;margin:0 0 10px}
+.lead{color:var(--muted);margin:4px 0 0;max-width:70ch}
+.note{background:var(--warn-soft);color:var(--fg);border-left:3px solid var(--warn);padding:8px 12px;border-radius:0 6px 6px 0;font-size:13.5px;max-width:90ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.kpi{background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-family:var(--cond);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+.kpi small{display:block;color:var(--muted);font-size:12.5px}
+.tools{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:4px 10px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tools label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:980px){ .split.open{grid-template-columns:minmax(0,1fr) 380px} }
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;font-weight:500;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--sunken)}
+tbody tr[aria-selected="true"]{background:var(--accent-soft)}
+tbody tr:last-child td{border-bottom:0}
+.role{font-weight:500}
+.co{color:var(--muted);font-size:13px}
+.code{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;white-space:nowrap;border:1px solid transparent}
+.p-good{background:var(--good-soft);color:var(--good)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-plain{background:var(--sunken);color:var(--muted)} .p-pl{border-color:var(--pl);color:var(--pl)}
+.score{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.score i{display:block;width:44px;height:6px;border-radius:3px;background:var(--sunken);overflow:hidden}
+.score i::after{content:"";display:block;height:100%;width:var(--w);background:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
+.panel h3{font-family:var(--cond);font-size:19px;margin:0;line-height:1.25}
+dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;font-size:14px}
+dt{color:var(--muted)} dd{margin:0;overflow-wrap:anywhere}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--sunken)} .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13.5px}
+.rules li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.src{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:8px;min-width:0}
+.src header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.src header b{font-family:var(--cond);font-size:17px}
+.src .big{font-family:var(--cond);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.src p{margin:0;color:var(--muted);font-size:13px}
+.src.off{background:transparent;border-style:dashed}
+svg text{font-family:var(--sans);fill:var(--muted);font-size:10px}
+.bars{display:grid;gap:8px}
+.barrow{display:grid;grid-template-columns:minmax(120px,220px) minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:13.5px}
+.barrow .track{height:14px;background:var(--sunken);border-radius:3px;overflow:hidden}
+.barrow .track i{display:block;height:100%;background:var(--accent);min-width:2px}
+.barrow .track i.g{background:var(--good)} .barrow .track i.w{background:var(--warn)} .barrow .track i.b{background:var(--bad)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:0}
+.run{display:grid;gap:6px;padding:12px 0;border-bottom:1px solid var(--line)}
+.run:last-child{border-bottom:0}
+.run header{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.run header b{font-variant-numeric:tabular-nums}
+.tl{display:flex;height:16px;border-radius:3px;overflow:hidden;background:var(--sunken)}
+.tl i{display:block;height:100%}
+.tl .q{background:repeating-linear-gradient(135deg,var(--warn-soft) 0 6px,var(--sunken) 6px 12px)}
+.tl .s{background:var(--accent)} .tl .i{background:var(--good)} .tl .v{background:var(--warn)} .tl .p{background:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+pre{margin:0;background:var(--sunken);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px;max-width:80ch}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+</style>
+
+<div class="bar"><div class="wrap">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".35"/><circle cx="11" cy="11" r="5.5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><path d="M11 11 L18.5 5.5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.2" cy="13.6" r="1.7" fill="var(--pl)"/></svg>
+    JobRadar
+  </div>
+  <nav id="nav">
+    <a href="#dzis">Dziś</a><a href="#zrodla">Źródła</a><a href="#lejek">Lejek</a><a href="#przebiegi">Przebiegi</a><a href="#kontrakt">Kontrakt danych</a>
+  </nav>
+  <label class="day" for="day">Raport z dnia
+    <select id="day"><option value="2026-11-18">2026-11-18</option><option value="2026-11-17">2026-11-17</option></select>
+  </label>
+</div></div>
+
+<div class="wrap"><main id="view"></main></div>
+
+<script>
+// ---- Data. Offers, counts and timings are copied from the published reports of 2026-11-17 and 2026-11-18. Scores are EXAMPLES. ----
+const DAYS = {
+ "2026-11-18": {
+  sources:[["greenhouse",7500,7546],["ashby",1992,1981],["justjoinit",10960,11063],["weworkremotely",100,99],["remotive",16,16]],
+  prefilter:{"title-no-keyword":8793,"country-outside-scope":372,"title-excluded":112,"mode-onsite":76},
+  verify:null,
+  offers:[
+   ["3219a126","Nexio Management","Fullstack Developer (Angular/.NET) (k/m/n)","justjoinit","PL","Warszawa","unknown","","alive","https://justjoin.it/job-offer/nexio-management-fullstack-developer-angular-net-k-m-n--warszawa-net-f5fa769c"],
+   ["f0ef149c","Axabee","AI Developer","justjoinit","PL","Opole","remote","","alive","https://justjoin.it/job-offer/axabee-ai-developer-opole-ai"],
+   ["8a20049c","Hiberus Poland","AI Tester / AI Evaluation Engineer","justjoinit","PL","Wrocław","remote","","alive","https://justjoin.it/job-offer/hiberus-poland-ai-tester-ai-evaluation-engineer-wroclaw-testing"],
+   ["56644bca","Elvoro","AI Creative Engineer (Social Media)","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/elvoro-ai-creative-engineer-social-media"],
+   ["598acdea","Samsara","Director, AI Product Management (GTM)","greenhouse",null,"","unknown","","alive","https://www.samsara.com/company/careers/roles/8300773?gh_jid=8300773"],
+   ["60347b4b","Cloudflare","AI & Automation Intern, Communications (Winter 2027)","greenhouse",null,"","unknown","","alive","https://boards.greenhouse.io/cloudflare/jobs/8394342?gh_jid=8394342"],
+   ["c635b765","Careerflow.ai","Code Reviewer - C++/C# (LATAM)","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/careerflow-ai-code-reviewer-c-c-latam"]
+  ]},
+ "2026-11-17": {
+  sources:[["greenhouse",7517,7575],["ashby",1987,1975],["justjoinit",11063,null],["weworkremotely",99,null],["remotive",16,16]],
+  prefilter:{"title-no-keyword":8803,"country-outside-scope":372,"title-excluded":107,"mode-onsite":77},
+  verify:{checked:336,alive:311,dead:2,unverified:23,reasons:{"block-phrase":14,"title-not-on-page":7,"transport-error":2}},
+  offers:[
+   ["06ce432a","Accenture","AWS Engineer (AI&Data)","justjoinit","PL","Warszawa","unknown","","alive","https://justjoin.it/job-offer/accenture-aws-engineer-ai-data--warszawa-devops"],
+   ["11fbe16e","B2Bnetwork","Techniczny Analityk AI w obszarze SDLC / AI Engineer (k/m/x)","justjoinit","PL","Warszawa","remote","120-130 PLN/h","alive","https://justjoin.it/job-offer/b2bnetwork-techniczny-analityk-ai-w-obszarze-sdlc-ai-engineer-k-m-x--warszawa-analytics"],
+   ["1bf3585d","FUN CRAFTERS SP. Z O O.","Senior Backend Developer (.Net)","justjoinit","PL","Kraków","remote","","alive","https://justjoin.it/job-offer/fun-crafters-sp-z-o-o--senior-backend-developer-net--krakow-game"],
+   ["3831aaef","EPAM Systems","Lead Python Backend Engineer","justjoinit","PL","Warszawa","remote","","alive","https://justjoin.it/job-offer/epam-systems-lead-python-backend-engineer-warsaw-python"],
+   ["3e332015","B3 Consulting Poland","Agentic .NET Developer","justjoinit","PL","Kraków","unknown","","alive","https://justjoin.it/job-offer/b3-consulting-poland-agentic-net-developer-krakow-net"],
+   ["56d63c49","EPAM Systems","Lead Java Backend Developer","justjoinit","PL","Kraków","unknown","","alive","https://justjoin.it/job-offer/epam-systems-lead-java-backend-developer-krakow-java-e3d2bd06"],
+   ["6077b7d3","EPAM Systems","AI Architect","justjoinit","PL","Kraków","unknown","","alive","https://justjoin.it/job-offer/epam-systems-ai-architect-krakow-architecture"],
+   ["6989d900","EPAM Systems","Generative AI Operations Engineer (GenAI Ops)","justjoinit","PL","Katowice","remote","","alive","https://justjoin.it/job-offer/epam-systems-generative-ai-operations-engineer-genai-ops--katowice-devops-77d635fa"],
+   ["7c55094e","EPAM Systems","Lead Azure AI Security Engineer","justjoinit","PL","Warszawa","remote","","alive","https://justjoin.it/job-offer/epam-systems-lead-azure-ai-security-engineer-warsaw-security-9751d06f"],
+   ["88f17440","EPAM Systems","Generative AI Systems Architect","justjoinit","PL","Poznań","remote","","alive","https://justjoin.it/job-offer/epam-systems-generative-ai-systems-architect-poznan-architecture-c1874ff9"],
+   ["1e803ed9","Typeform","Senior AI Engineer - EU","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/typeform-senior-ai-engineer-eu"],
+   ["1eb7c79a","emagine Polska","Développeur C# (h/f)","justjoinit","FR","Paryż","unknown","","alive","https://justjoin.it/job-offer/emagine-polska-developpeur-c-h-f--paris-net-15efaa14"],
+   ["2caa70eb","GitLab","Backend Engineer (Ruby), AI Engineering: AI Catalog","greenhouse",null,"","unknown","","alive","https://job-boards.greenhouse.io/gitlab/jobs/8940898002"],
+   ["33051a7b","Reddit","Staff Machine Learning Engineer, Ads Foundational Representations","greenhouse","GB","Remote - United Kingdom","unknown","","alive","https://job-boards.greenhouse.io/reddit/jobs/8018513"],
+   ["347b694b","Bitovi","Backend / Platform Developer Consultant (Temporal & Kubernetes)","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/bitovi-backend-platform-developer-consultant-temporal-kubernetes"],
+   ["b72cd0ea","Proxify AB","Senior Backend Developer (Python)","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/proxify-ab-senior-backend-developer-python-11"],
+   ["ca5958b0","Proxify AB","Senior Backend Developer (Node.js / Nest.js)","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/proxify-ab-senior-backend-developer-node-js-nest-js-4"],
+   ["e55c5995","XM","AI Engineering Enablement Expert","justjoinit","CY","Limassol","remote","","alive","https://justjoin.it/job-offer/xm-ai-engineering-enablement-expert-limassol-pm"],
+   ["e6bf1fe9","openai","Applied AI Engineer - Startups","ashby",null,"","unknown","","alive","https://jobs.ashbyhq.com/openai/980bc2ea-2c35-4546-bb48-5496a4e6847f"],
+   ["f186769b","Reddit","Staff Machine Learning Engineer, Ads Foundational Representations","greenhouse","NL","Remote - The Netherlands","unknown","","alive","https://job-boards.greenhouse.io/reddit/jobs/8018517"],
+   ["ff0a8fc5","Vertican","Senior Applied AI Engineer, Document Intelligence","weworkremotely",null,"","remote","","alive","https://weworkremotely.com/remote-jobs/vertican-senior-applied-ai-engineer-document-intelligence"]
+  ]}
+};
+const OFF_SOURCES=[["lever","Zbudowany, wyłączony","Brak listy firm do śledzenia."],["adzuna","Zbudowany, wyłączony","Brak kluczy API (konto Adzuna)."],["nofluffjobs","Nie zbudowany","robots.txt zabrania /api/ i /posting/."],["pracuj","Planowany","Etap 3: źródła przeglądarkowe."]];
+const RUNS=[
+ {id:20,day:"2026-11-18",kind:"zaplanowany",ok:true,start:"05:08",end:"07:45",seg:[["q",137,"kolejka (runnery offline)"],["s",5.5,"scrape"],["i",0.8,"ingest"],["v",13,"verify"],["p",0.8,"publish"]],note:"7 nowych ofert, 5 źródeł zdrowych"},
+ {id:19,day:"2026-11-17",kind:"ręczny",ok:true,start:"16:44",end:"17:05",seg:[["q",1.5,"kolejka"],["s",5.3,"scrape"],["i",0.8,"ingest"],["v",13,"verify"],["p",0.7,"publish"]],note:"21 ofert w raporcie, Polska pierwsza"},
+ {id:8,day:"2026-11-17",kind:"zaplanowany",ok:true,start:"05:08",end:"08:19",seg:[["q",185,"kolejka (runnery offline)"],["s",2,"scrape"],["i",1,"ingest"],["v",0.2,"verify (atrapa)"],["p",1,"publish"]],note:"3 nowe oferty, 3 źródła"}
+];
+const EX={ // example scores: the agents have not run on a real model yet
+ "3219a126":[78,"B"],"f0ef149c":[86,"A"],"8a20049c":[72,"A"],"56644bca":[41,"-"],"598acdea":[12,"-"],"60347b4b":[8,"-"],"c635b765":[55,"B"],
+ "1bf3585d":[91,"B"],"3e332015":[88,"B"],"11fbe16e":[74,"A"],"6989d900":[70,"A"],"88f17440":[64,"A"],"6077b7d3":[61,"A"],"06ce432a":[52,"-"],"3831aaef":[48,"-"],"56d63c49":[30,"-"],"7c55094e":[58,"A"],
+ "1e803ed9":[83,"A"],"1eb7c79a":[35,"B"],"2caa70eb":[44,"-"],"33051a7b":[40,"-"],"347b694b":[38,"-"],"b72cd0ea":[57,"-"],"ca5958b0":[46,"-"],"e55c5995":[33,"-"],"e6bf1fe9":[62,"A"],"f186769b":[40,"-"],"ff0a8fc5":[76,"A"]
+};
+const LABEL={remote:"zdalna",unknown:"nieznany",hybrid:"hybrydowa",onsite:"biuro"};
+const state={day:"2026-11-18",country:"all",mode:"all",q:"",sel:null,scores:false,fb:{}};
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=n=>n.toLocaleString("pl-PL");
+const offers=()=>DAYS[state.day].offers.map(o=>({code:o[0],co:o[1],role:o[2],src:o[3],cc:o[4],city:o[5],mode:o[6],pay:o[7],live:o[8],url:o[9]}));
+
+function rows(){
+  let r=offers().filter(o=>(state.country==="all"||(state.country==="PL"?o.cc==="PL":o.cc!=="PL"))&&(state.mode==="all"||o.mode===state.mode)
+    &&(!state.q||(o.co+" "+o.role+" "+o.city).toLowerCase().includes(state.q.toLowerCase())));
+  const sc=o=>state.scores?EX[o.code][0]:0;
+  return r.sort((a,b)=>(a.cc==="PL"?0:1)-(b.cc==="PL"?0:1)||sc(b)-sc(a)||a.code.localeCompare(b.code));
+}
+function chip(group,val,text){return `<button class="chip" data-g="${group}" data-v="${val}" aria-pressed="${state[group]===val}">${text}</button>`}
+
+function viewToday(){
+  const all=offers(), pl=all.filter(o=>o.cc==="PL").length, unk=all.filter(o=>o.mode==="unknown").length, d=DAYS[state.day];
+  const r=rows(), sel=all.find(o=>o.code===state.sel);
+  return `<div><h1>Nowe oferty z ${state.day}</h1><p class="lead">Najpierw Polska, potem reszta. W każdej grupie od najwyższej oceny. Kliknij wiersz, żeby zobaczyć szczegóły i zostawić ocenę.</p></div>
+  <div class="kpis">
+    <div class="kpi"><span>Nowe oferty</span><b>${all.length}</b><small>po prefiltrze</small></div>
+    <div class="kpi"><span>Z Polski</span><b>${pl}</b><small>${Math.round(pl/all.length*100)}% raportu</small></div>
+    <div class="kpi"><span>Tryb nieznany</span><b>${unk}</b><small>do ustalenia przez AI</small></div>
+    <div class="kpi"><span>Ocenione przez AI</span><b>${state.scores?all.length:0}</b><small>${state.scores?"dane przykładowe":"ocenianie wyłączone"}</small></div>
+    <div class="kpi"><span>Źródła zdrowe</span><b>${d.sources.length}/${d.sources.length}</b><small>${fmt(d.sources.reduce((s,x)=>s+x[1],0))} ofert na listach</small></div>
+  </div>
+  <div class="tools">
+    <div class="chips" role="group" aria-label="Kraj">${chip("country","all","Wszystkie kraje")}${chip("country","PL","Polska")}${chip("country","other","Poza Polską")}</div>
+    <div class="chips" role="group" aria-label="Tryb pracy">${chip("mode","all","Każdy tryb")}${chip("mode","remote","Zdalna")}${chip("mode","unknown","Nieznany")}</div>
+    <input type="search" id="q" placeholder="Szukaj firmy, roli, miasta" value="${esc(state.q)}" aria-label="Szukaj">
+    <label><input type="checkbox" id="ex" ${state.scores?"checked":""}> Pokaż przykładowe oceny AI</label>
+  </div>
+  ${state.scores?`<p class="note">Oceny i ścieżki w tej tabeli są przykładowe. Agenty oceniające nie biegły jeszcze na prawdziwym modelu, więc prawdziwy raport pokazuje dziś „nie oceniono".</p>`:""}
+  <div class="split ${sel?"open":""}">
+    <div class="tablebox"><table>
+      <thead><tr><th>Rola i firma</th><th>Miejsce</th><th>Tryb</th><th>Widełki</th><th>Ocena</th><th>Status</th><th>Źródło</th><th>Kod</th></tr></thead>
+      <tbody>${r.length?r.map(o=>{const e=EX[o.code];return `<tr data-code="${o.code}" aria-selected="${o.code===state.sel}" tabindex="0">
+        <td><div class="role">${esc(o.role)}</div><div class="co">${esc(o.co)}</div></td>
+        <td>${o.cc?`<span class="pill ${o.cc==="PL"?"p-pl":"p-plain"}">${o.cc}</span> `:""}${esc(o.city)||(o.cc?"":"<span class=co>brak danych</span>")}</td>
+        <td><span class="pill ${o.mode==="remote"?"p-good":"p-plain"}">${LABEL[o.mode]}</span></td>
+        <td class="num">${esc(o.pay)||"<span class=co>—</span>"}</td>
+        <td>${state.scores?`<span class="score"><i style="--w:${e[0]}%"></i>${e[0]} <span class="co">${e[1]==="-"?"":"ścieżka "+e[1]}</span></span>`:`<span class="co">nie oceniono</span>`}</td>
+        <td><span class="pill p-good">${o.live==="alive"?"aktualna":"niezweryfikowana"}</span></td>
+        <td class="co">${o.src}</td><td class="code">${o.code}</td></tr>`}).join(""):`<tr><td colspan="8" class="empty">Żadna oferta nie pasuje do filtrów.</td></tr>`}</tbody>
+    </table></div>
+    ${sel?detail(sel):""}
+  </div>`;
+}
+function detail(o){
+  const e=EX[o.code], fb=state.fb[o.code];
+  return `<aside class="panel" aria-label="Szczegóły oferty">
+    <div><h3>${esc(o.role)}</h3><div class="co">${esc(o.co)}</div></div>
+    <dl><dt>Miejsce</dt><dd>${esc(o.city)||"brak danych"}${o.cc?" ("+o.cc+")":""}</dd><dt>Tryb pracy</dt><dd>${LABEL[o.mode]}</dd><dt>Widełki</dt><dd>${esc(o.pay)||"nie podano"}</dd><dt>Źródło</dt><dd>${o.src}</dd><dt>Status</dt><dd>aktualna, sprawdzona ${state.day}</dd><dt>Kod</dt><dd class="code">${o.code}</dd></dl>
+    ${state.scores?`<div><h2>Dlaczego ${e[0]} punktów <span class="pill p-warn">przykład</span></h2><ul class="rules"><li><span>Dopasowanie roli do ścieżki ${e[1]==="-"?"(brak)":e[1]}</span><b>${Math.round(e[0]*.5)}</b></li><li><span>Główny stack</span><b>${Math.round(e[0]*.3)}</b></li><li><span>Tryb pracy i kontrakt B2B</span><b>${e[0]-Math.round(e[0]*.5)-Math.round(e[0]*.3)}</b></li></ul><p class="co" style="margin:6px 0 0">Tu trafią cytaty z ogłoszenia, na których agent oparł ocenę.</p></div>`:`<p class="co">Ocena AI pojawi się tutaj po włączeniu oceniania: wynik, ścieżka, reguły, które zadziałały, i cytaty z ogłoszenia.</p>`}
+    <div><h2>Twoja ocena</h2><div class="btns">${[["fit","Pasuje"],["nofit","Nie pasuje"],["applied","Aplikowałem"]].map(([k,t])=>`<button class="btn" data-fb="${k}" aria-pressed="${fb===k}">${t}</button>`).join("")}</div>
+      <p class="co" style="margin:6px 0 0">${fb?"Zapisano w tej przeglądarce (makieta). W aplikacji trafi do pliku feedbacku.":"Trafi do zbioru testowego dla progów i promptów."}</p></div>
+    <div class="btns"><a class="btn primary" href="${esc(o.url)}" target="_blank" rel="noopener">Otwórz ogłoszenie</a><button class="btn" data-close>Zamknij</button></div>
+  </aside>`;
+}
+function spark(vals){
+  const w=120,h=34,min=Math.min(...vals),max=Math.max(...vals),r=max-min||1;
+  const pts=vals.map((v,i)=>[4+i*(w-8)/(vals.length-1),h-5-(v-min)/r*(h-12)]);
+  const d=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  const last=pts[pts.length-1];
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="Liczba ofert z ostatnich dni"><path d="${d} L${last[0]} ${h} L4 ${h} Z" fill="var(--accent-soft)"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.5"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6" fill="var(--accent)"/></svg>`;
+}
+function viewSources(){
+  const d=DAYS[state.day], prev=DAYS["2026-11-17"];
+  return `<div><h1>Zdrowie źródeł</h1><p class="lead">Źródło jest zdrowe, gdy liczba ofert na liście nie odbiega od mediany z poprzednich przebiegów i nie zgłosiło błędów.</p></div>
+  <div class="grid">${d.sources.map(([id,n,med])=>{const p=prev.sources.find(s=>s[0]===id)[1], hist=[p*0.985,p*1.004,p*0.997,p,n].map(Math.round), diff=med?((n-med)/med*100):null;
+    return `<section class="src"><header><b>${id}</b><span class="pill p-good">zdrowe</span></header>
+      <div style="display:flex;justify-content:space-between;align-items:end;gap:8px"><div><div class="big">${fmt(n)}</div><p>ofert na liście</p></div>${spark(hist)}</div>
+      <p>${med?`mediana ${fmt(med)}, odchylenie ${diff>0?"+":""}${diff.toFixed(1)}%`:"mediana: za mało przebiegów"}</p></section>`}).join("")}
+  ${OFF_SOURCES.map(([id,st,why])=>`<section class="src off"><header><b>${id}</b><span class="pill p-plain">${st}</span></header><p>${why}</p></section>`).join("")}</div>
+  <p class="note">Wykresy pokazują dwa prawdziwe dni (17 i 18 listopada); trzy wcześniejsze punkty są przykładowe, bo źródła działają od dwóch dni.</p>`;
+}
+function bars(obj,cls){const max=Math.max(...Object.values(obj));return `<div class="bars">${Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="barrow"><span>${k}</span><div class="track"><i class="${cls?cls(k):""}" style="width:${v/max*100}%"></i></div><span class="num">${fmt(v)}</span></div>`).join("")}</div>`}
+function viewFunnel(){
+  const d=DAYS[state.day], rej=Object.values(d.prefilter).reduce((a,b)=>a+b,0), v=DAYS["2026-11-17"].verify;
+  const NAMES={"title-no-keyword":"Tytuł bez słowa kluczowego","country-outside-scope":"Kraj poza zakresem","title-excluded":"Rola wykluczona (sprzedaż, HR…)","mode-onsite":"Praca w biurze"};
+  return `<div><h1>Lejek: co odpada i dlaczego</h1><p class="lead">Większość ofert odrzuca prefiltr, zanim cokolwiek trafi do AI. Ten widok pokazuje, czy kryteria nie są za ostre.</p></div>
+  <div class="two">
+    <section class="card"><h2>Odrzucone przez prefiltr: ${fmt(rej)}</h2>${bars(Object.fromEntries(Object.entries(d.prefilter).map(([k,x])=>[NAMES[k],x])))}<p class="co" style="margin:10px 0 0">Do raportu przeszło ${d.offers.length} nowych ofert.</p></section>
+    <section class="card"><h2>Sprawdzanie aktualności ofert</h2>${bars({"Aktualne":v.alive,"Niezweryfikowane":v.unverified,"Wygasłe":v.dead},k=>k==="Aktualne"?"g":k==="Wygasłe"?"b":"w")}
+      <p class="co" style="margin:10px 0 6px">Powody „niezweryfikowane" (${v.unverified} z ${v.checked}, przebieg z 17.11):</p>${bars({"Strona wygląda na blokadę":v.reasons["block-phrase"],"Brak tytułu na stronie":v.reasons["title-not-on-page"],"Błąd połączenia":v.reasons["transport-error"]},()=>"w")}</section>
+  </div>`;
+}
+function viewRuns(){
+  return `<div><h1>Przebiegi</h1><p class="lead">Każdy przebieg to cztery etapy. Pasek pokazuje, gdzie upłynął czas, razem z czekaniem w kolejce.</p></div>
+  <section class="card">
+    <div class="legend"><span><i style="background:var(--warn-soft);outline:1px solid var(--line)"></i>kolejka</span><span><i style="background:var(--accent)"></i>scrape</span><span><i style="background:var(--good)"></i>ingest</span><span><i style="background:var(--warn)"></i>verify</span><span><i style="background:var(--muted)"></i>publish</span></div>
+    ${RUNS.map(r=>{const tot=r.seg.reduce((s,x)=>s+x[1],0);return `<div class="run"><header><b>#${r.id}</b><span>${r.day} ${r.start}–${r.end} UTC</span><span class="pill p-plain">${r.kind}</span><span class="pill ${r.ok?"p-good":"p-bad"}">${r.ok?"zielony":"błąd"}</span><span class="co">${r.note}</span></header>
+      <div class="tl" role="img" aria-label="${r.seg.map(s=>s[2]+" "+s[1]+" min").join(", ")}">${r.seg.map(s=>`<i class="${s[0]}" style="width:${s[1]/tot*100}%" title="${s[2]}: ${s[1]} min"></i>`).join("")}</div>
+      <div class="co">${r.seg.map(s=>s[2]+" "+String(s[1]).replace(".",",")+" min").join(" · ")}</div></div>`}).join("")}
+  </section>
+  <p class="note">Oba zaplanowane przebiegi czekały ponad dwie godziny na własne runnery. Taki pasek pokazuje to od razu.</p>`;
+}
+function viewContract(){
+  return `<div><h1>Kontrakt danych dla frontendu</h1><p class="lead">Aplikacja nie ma dziś API. Propozycja: potok po każdym przebiegu zapisuje jeden plik JSON na dzień, a frontend jest statyczną stroną, która go czyta.</p></div>
+  <div class="two">
+    <section class="card"><h2>Proponowany plik: reports/2026-11-18.json</h2><pre>{
+  "run_date": "2026-11-18",
+  "criteria_version": 2,
+  "offers": [{
+    "code": "f0ef149c",
+    "title": "AI Developer",
+    "company": "Axabee",
+    "country": "PL", "location": "Opole",
+    "work_mode": "remote",
+    "salary": null,
+    "source": "justjoinit",
+    "url": "https://justjoin.it/job-offer/…",
+    "liveness": "alive",
+    "first_seen_at": "2026-11-18",
+    "score": null, "track": null,
+    "rules_fired": [], "evidence": []
+  }],
+  "sources": [{ "source": "justjoinit",
+    "offers_found": 10960, "median": 11063,
+    "healthy": true, "errors": [] }],
+  "prefilter": { "title-no-keyword": 8793 },
+  "verify": { "alive": 311, "dead": 2,
+    "unverified": 23, "reasons": {} },
+  "not_evaluated": 7
+}</pre></section>
+    <section class="card"><h2>Co już istnieje</h2><ul class="plain">
+      <li>Baza SQLite i raporty Markdown na gałęzi <code>data</code>, po jednym raporcie na dzień.</li>
+      <li>Wszystkie pola z przykładu są już w bazie albo w plikach podsumowań etapów. Brakuje tylko eksportu do JSON.</li>
+      <li>Feedback zapisuje dziś workflow do pliku <code>feedback/feedback.jsonl</code>.</li></ul>
+      <h2 style="margin-top:16px">Decyzje do podjęcia</h2><ul class="plain">
+      <li>Hosting: statyczna strona wymaga, żeby pliki JSON były dostępne dla przeglądarki. Repo jest prywatne.</li>
+      <li>Feedback z przeglądarki potrzebuje czegoś, co przyjmie zapis. Bez serwera zostaje link do formularza workflow.</li>
+      <li>Specyfikacja wyklucza dziś front end i API (D-03). Trzeba to zmienić świadomie.</li></ul></section>
+  </div>`;
+}
+const VIEWS={dzis:viewToday,zrodla:viewSources,lejek:viewFunnel,przebiegi:viewRuns,kontrakt:viewContract};
+function render(keepFocus){
+  const name=VIEWS[location.hash.slice(1)]?location.hash.slice(1):"dzis";
+  document.querySelectorAll("#nav a").forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+name?"page":"false"));
+  $("#view").innerHTML=VIEWS[name]();
+  if(keepFocus){const q=$("#q");if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}}
+}
+addEventListener("hashchange",()=>render());
+$("#day").addEventListener("change",e=>{state.day=e.target.value;state.sel=null;render()});
+$("#view").addEventListener("click",e=>{
+  const c=e.target.closest(".chip"); if(c){state[c.dataset.g]=c.dataset.v;return render()}
+  const f=e.target.closest("[data-fb]"); if(f){state.fb[state.sel]=state.fb[state.sel]===f.dataset.fb?null:f.dataset.fb;return render()}
+  if(e.target.closest("[data-close]")){state.sel=null;return render()}
+  if(e.target.closest("a"))return;
+  const tr=e.target.closest("tr[data-code]"); if(tr){state.sel=state.sel===tr.dataset.code?null:tr.dataset.code;render()}
+});
+$("#view").addEventListener("keydown",e=>{const tr=e.target.closest&&e.target.closest("tr[data-code]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();state.sel=tr.dataset.code;render()}});
+$("#view").addEventListener("input",e=>{if(e.target.id==="q"){state.q=e.target.value;render(true)}});
+$("#view").addEventListener("change",e=>{if(e.target.id==="ex"){state.scores=e.target.checked;render()}});
+state.sel="f0ef149c"; render();
+</script>
